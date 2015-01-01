@@ -1,0 +1,6 @@
+Quit=Quitter
+Back=Précédent
+Add=Ajouter
+Learn=Réviser
+Edit=Editer
+Remove=Supprimer
