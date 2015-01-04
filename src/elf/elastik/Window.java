@@ -27,6 +27,7 @@ class Window {
 	private final EditPage edit_page;
 	private final WordPage word_page;
 	private final ConfigPage config_page;
+	private final TrainPage train_page;
 	
 	public Window(Main app) {
 		this.app = app;
@@ -48,6 +49,7 @@ class Window {
 		edit_page = new EditPage(this, current_language);
 		word_page = new WordPage(this, current_language, edit_page.getCurrentTheme(), edit_page.getWords());
 		config_page = new ConfigPage(this, current_language);
+		train_page = new TrainPage(this, current_language);
 
 		// open all
 		tbar.setTitle(main_page.getTitle());
@@ -88,6 +90,14 @@ class Window {
 	}
 	
 	/**
+	 * Set the title in the title bar.
+	 * @param title		New title.
+	 */
+	public void setTitle(String title) {
+		tbar.setTitle(title);
+	}
+	
+	/**
 	 * Back to the previous page.
 	 */
 	public void doBack() {
@@ -113,6 +123,13 @@ class Window {
 	 */
 	public void doLearn() {
 		add(config_page);
+	}
+	
+	/**
+	 * Launch training session.
+	 */
+	public void doTrain() {
+		add(train_page);
 	}
 	
 	/**

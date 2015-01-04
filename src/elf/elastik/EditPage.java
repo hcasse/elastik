@@ -10,7 +10,6 @@ import elf.ui.Container;
 import elf.ui.Displayer;
 import elf.ui.Icon;
 import elf.ui.List;
-import elf.ui.PagePane.Page;
 import elf.ui.SplitPane;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
@@ -30,10 +29,7 @@ import elf.ui.meta.Var.Listener;
  * 
  * @author casse
  */
-public class EditPage implements Listener<LanguageModel>, ApplicationPage {
-	private Main app;
-	private Window window;
-	private Page page;
+public class EditPage extends ApplicationPage implements Listener<LanguageModel> {
 	private boolean updated = false;
 	private final SingleVar<LanguageModel> current_language;
 	private final SingleVar<Theme> current_theme = new SingleVar<Theme>();
@@ -46,15 +42,50 @@ public class EditPage implements Listener<LanguageModel>, ApplicationPage {
 	 * @param window	Owner window.
 	 */
 	public EditPage(Window window, SingleVar<LanguageModel> current_language) {
-		
-		// initialize global
-		this.window = window;
-		app = window.getApplication();
+		super(window);
 		this.current_language = current_language;
-		current_language.addListener(this);
-		
+		current_language.addListener(this);		
+	}
+	
+	/**
+	 * Get the current theme.
+	 * @return	Current theme.
+	 */
+	public SingleVar<Theme> getCurrentTheme() {
+		return current_theme;
+	}
+	
+	@Override
+	public void change(Var<LanguageModel> data) {
+		updated = true;
+	}
+
+	@Override
+	public String getTitle() {
+		return String.format(app.t("Editing %s"), Locale.forLanguageTag(current_language.get().get().getName()).getDisplayLanguage());
+	}
+
+	@Override
+	public void onShow() {
+		getPage();
+		if(updated) {
+			themes.setCollection(current_language.get().get().getThemes());
+			updated = false;
+		}
+	}
+	
+	/**
+	 * Get the variable of words.
+	 * @return
+	 */
+	public CollectionVar<Word> getWords() {
+		return words;
+	}
+
+	@Override
+	protected void make() {
+
 		// prepare the page
-		page = window.makePage();
 		SplitPane spane = page.addSplitPane(Component.VERTICAL);
 		
 		// make theme list
@@ -117,40 +148,5 @@ public class EditPage implements Listener<LanguageModel>, ApplicationPage {
 		};
 		remove_word.add(word_list.getSelector());
 		wa.add(remove_word);		
-	}
-	
-	/**
-	 * Get the current theme.
-	 * @return	Current theme.
-	 */
-	public SingleVar<Theme> getCurrentTheme() {
-		return current_theme;
-	}
-	
-	@Override
-	public void change(Var<LanguageModel> data) {
-		updated = true;
-	}
-
-	@Override
-	public String getTitle() {
-		return String.format(app.t("Editing %s"), Locale.forLanguageTag(current_language.get().get().getName()).getDisplayLanguage());
-	}
-
-	@Override
-	public Page getPage() {
-		if(updated) {
-			themes.setCollection(current_language.get().get().getThemes());
-			updated = false;
-		}
-		return page;
-	}
-	
-	/**
-	 * Get the variable of words.
-	 * @return
-	 */
-	public CollectionVar<Word> getWords() {
-		return words;
 	}
 }

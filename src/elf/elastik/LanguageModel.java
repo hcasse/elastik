@@ -1,6 +1,7 @@
 package elf.elastik;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import elf.ui.meta.LateLoader;
 
@@ -9,13 +10,26 @@ import elf.ui.meta.LateLoader;
  * @author casse
  */
 public class LanguageModel extends LateLoader<Language, String> {
-	Main app;
+	private Main app;
+	private String for_name, nat_name;
 	
 	public LanguageModel(Context context, String id) {
 		super(context, id);
 		app = context.app;
 	}
 	
+	public String getForeignName() {
+		if(for_name == null)
+			for_name = Locale.forLanguageTag(get().getName()).getDisplayName();
+		return for_name;
+	}
+	
+	public String getNativeName() {
+		if(nat_name == null)
+			nat_name = Locale.forLanguageTag(get().getNative()).getDisplayName();
+		return nat_name;
+	}
+
 	public LanguageModel(Context context, Language lang) {
 		super(context, lang.getName());
 		app = context.app;

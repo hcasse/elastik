@@ -7,7 +7,6 @@ import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.Displayer;
 import elf.ui.Form;
-import elf.ui.PagePane.Page;
 import elf.ui.SubsetField;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
@@ -26,16 +25,13 @@ import elf.ui.meta.Var;
  * 
  * @author casse
  */
-public class ConfigPage implements ApplicationPage, Var.Listener<LanguageModel> {
-	private Main app;
-	private Window window;
+public class ConfigPage extends ApplicationPage implements Var.Listener<LanguageModel> {
 	private Var<LanguageModel> current_language;
 	private CollectionVar<Theme> themes = new CollectionVar<Theme>();
 	private CollectionVar<Theme> subset;
-	private Page page;
 	
 	private final Action learn = new Action() {
-		@Override public void run() { }
+		@Override public void run() { window.doTrain(); }
 		@Override public String getLabel() { return app.t("Learn"); }
 		@Override public String getHelp() { return app.t("Start a learning session."); }
 		@Override public boolean isEnabled() {
@@ -54,8 +50,7 @@ public class ConfigPage implements ApplicationPage, Var.Listener<LanguageModel> 
 	};
 	
 	public ConfigPage(Window window, Var<LanguageModel> current_language) {
-		this.window = window;
-		app = window.getApplication();
+		super(window);
 		this.current_language = current_language;
 		repeat.setObject(app.config);
 	}
@@ -66,29 +61,25 @@ public class ConfigPage implements ApplicationPage, Var.Listener<LanguageModel> 
 	}
 
 	@Override
-	public Page getPage() {
-		if(page == null) {
-			change(current_language);
-			page = window.makePage();
-			Container body = page.addBox(Component.VERTICAL);
-			Container hbody = body.addBox(Component.HORIZONTAL);
-			Form form = hbody.addForm(Form.STYLE_TWO_COLUMN, learn);
-			form.addCheckBox(repeat);
-			form.setButtonVisible(false);
-			SubsetField<Theme> sset = hbody.addSubsetField(themes);
-			sset.setDisplayer(new Displayer<Theme>() {
-				@Override public String asString(Theme theme) {
-					return String.format(app.t("%s (%d words)"), theme.getNative(), theme.getWords().size());
-				}
-			});
-			subset = sset.getSubset();
-			learn.add(subset);
-			ActionBar bar = body.addActionBar();
-			bar.add(learn);
-			bar.setAlignment(Component.RIGHT);
-			current_language.addListener(this);
-		}
-		return page;
+	public void make() {
+		change(current_language);
+		Container body = page.addBox(Component.VERTICAL);
+		Container hbody = body.addBox(Component.HORIZONTAL);
+		Form form = hbody.addForm(Form.STYLE_TWO_COLUMN, learn);
+		form.addCheckBox(repeat);
+		form.setButtonVisible(false);
+		SubsetField<Theme> sset = hbody.addSubsetField(themes);
+		sset.setDisplayer(new Displayer<Theme>() {
+			@Override public String asString(Theme theme) {
+				return String.format(app.t("%s (%d words)"), theme.getNative(), theme.getWords().size());
+			}
+		});
+		subset = sset.getSubset();
+		learn.add(subset);
+		ActionBar bar = body.addActionBar();
+		bar.add(learn);
+		bar.setAlignment(Component.RIGHT);
+		current_language.addListener(this);
 	}
 
 	@Override

@@ -3,8 +3,6 @@ package elf.elastik;
 import elf.ui.Component;
 import elf.ui.Form;
 import elf.ui.Icon;
-import elf.ui.PagePane;
-import elf.ui.PagePane.Page;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
 import elf.ui.meta.SingleVar;
@@ -18,10 +16,7 @@ import elf.ui.meta.SingleVar;
  * +------------------+
  * @author casse
  */
-public class WordPage implements ApplicationPage {
-	private Main app;
-	private Window window;
-	private PagePane.Page page;
+public class WordPage extends ApplicationPage {
 	private SingleVar<LanguageModel> lang;
 	private SingleVar<Theme> theme;
 	private CollectionVar<Word> words;
@@ -51,8 +46,7 @@ public class WordPage implements ApplicationPage {
 	};
 
 	public WordPage(Window window, SingleVar<LanguageModel> lang, SingleVar<Theme> theme, CollectionVar<Word> words) {
-		this.app = window.getApplication();
-		this.window = window;
+		super(window);
 		this.lang = lang;
 		this.theme = theme;
 		this.words = words;
@@ -109,19 +103,15 @@ public class WordPage implements ApplicationPage {
 	}
 
 	@Override
-	public Page getPage() {
-		if(page == null) {
-			page = window.makePage();
-			Form form = page.addForm(Form.STYLE_VERTICAL, add_multi);
-			form.addAction(add_one);
-			form.setButtonAlignment(Component.RIGHT);
-			form.addTextField(for_word);
-			form.addTextField(nat_word);
-			add_one.add(for_word);
-			add_one.add(nat_word);
-			add_multi.add(for_word);
-			add_multi.add(nat_word);
-		}
-		return page;
+	public void make() {
+		Form form = page.addForm(Form.STYLE_VERTICAL, add_multi);
+		form.addAction(add_one);
+		form.setButtonAlignment(Component.RIGHT);
+		form.addTextField(for_word);
+		form.addTextField(nat_word);
+		add_one.add(for_word);
+		add_one.add(nat_word);
+		add_multi.add(for_word);
+		add_multi.add(nat_word);
 	}
 }

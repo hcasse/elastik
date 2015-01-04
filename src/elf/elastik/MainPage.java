@@ -10,8 +10,6 @@ import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.Displayer;
 import elf.ui.List;
-import elf.ui.PagePane;
-import elf.ui.PagePane.Page;
 import elf.ui.SelectionDialog;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
@@ -27,10 +25,7 @@ import elf.ui.meta.Var;
  * +-------+---------+
  * @author casse
  */
-public class MainPage implements ApplicationPage {
-	private final Main app;
-	private final Window window;
-	private final PagePane.Page page;
+public class MainPage extends ApplicationPage {
 	private final Var<LanguageModel> lang;
 	
 	Action add = new Action() {
@@ -57,39 +52,8 @@ public class MainPage implements ApplicationPage {
 	};
 	
 	public MainPage(Window window, Var<LanguageModel> language) {
-		this.window = window;
-		this.app = window.getApplication();
-		this.page = window.makePage();
+		super(window);
 		this.lang = language;
-		
-		// set dependencies
-		learn.add(language);
-		learn.add(app.langs);
-		edit.add(language);
-		edit.add(app.langs);
-		remove.add(language);
-		remove.add(app.langs);
-
-		// set the body
-		Container body = page.addBox(Component.HORIZONTAL);
-		
-		// build the list
-		List<LanguageModel> list = body.addList(app.langs);
-		list.setSelector(language);
-		list.setDisplayer(new Displayer<LanguageModel>() {
-			@Override public String asString(LanguageModel value) {
-				return Locale.forLanguageTag(value.getID()).getDisplayName();
-			}
-		});
-		
-		// build the button bar
-		ActionBar abar = body.addActionBar();
-		abar.setAlignment(ActionBar.SPREAD);
-		abar.setAxis(Component.VERTICAL);
-		abar.add(add);
-		abar.add(learn);
-		abar.add(edit);
-		abar.add(remove);
 	}
 
 	/**
@@ -146,10 +110,38 @@ public class MainPage implements ApplicationPage {
 	public String getTitle() {
 		return app.getName() + " " + app.getVersion();
 	}
-	
-	@Override
-	public Page getPage() {
-		return page;
-	}
 
+	@Override
+	protected void make() {
+		
+		// set dependencies
+		learn.add(lang);
+		learn.add(app.langs);
+		edit.add(lang);
+		edit.add(app.langs);
+		remove.add(lang);
+		remove.add(app.langs);
+
+		// set the body
+		Container body = page.addBox(Component.HORIZONTAL);
+		
+		// build the list
+		List<LanguageModel> list = body.addList(app.langs);
+		list.setSelector(lang);
+		list.setDisplayer(new Displayer<LanguageModel>() {
+			@Override public String asString(LanguageModel value) {
+				return Locale.forLanguageTag(value.getID()).getDisplayName();
+			}
+		});
+		
+		// build the button bar
+		ActionBar abar = body.addActionBar();
+		abar.setAlignment(ActionBar.SPREAD);
+		abar.setAxis(Component.VERTICAL);
+		abar.add(add);
+		abar.add(learn);
+		abar.add(edit);
+		abar.add(remove);
+	}
+	
 }
