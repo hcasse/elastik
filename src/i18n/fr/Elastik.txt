@@ -4,3 +4,4 @@ Add=Ajouter
 Learn=Réviser
 Edit=Editer
 Remove=Supprimer
+Well done!=Bravo

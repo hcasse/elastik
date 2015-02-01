@@ -3,14 +3,16 @@ package elf.elastik;
 import java.util.Locale;
 
 import elf.ui.ActionBar;
+import elf.ui.Box;
 import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.Displayer;
 import elf.ui.Form;
 import elf.ui.SubsetField;
+import elf.ui.meta.Accessor;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
-import elf.ui.meta.SetterVar;
+import elf.ui.meta.EnumVar;
 import elf.ui.meta.Var;
 
 /**
@@ -28,10 +30,11 @@ import elf.ui.meta.Var;
 public class ConfigPage extends ApplicationPage implements Var.Listener<LanguageModel> {
 	private Var<LanguageModel> current_language;
 	private CollectionVar<Theme> themes = new CollectionVar<Theme>();
-	private CollectionVar<Theme> subset;
+	private CollectionVar<Theme> subset = new CollectionVar<Theme>();
+	private final Var<Test> test;
 	
 	private final Action learn = new Action() {
-		@Override public void run() { window.doTrain(); }
+		@Override public void run() { doTrain(); }
 		@Override public String getLabel() { return app.t("Learn"); }
 		@Override public String getHelp() { return app.t("Start a learning session."); }
 		@Override public boolean isEnabled() {
@@ -45,14 +48,29 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		}
 	};
 	
-	private final SetterVar<Boolean> repeat = new SetterVar<Boolean>(null, "Repeat") {
-		@Override public String getLabel() { return app.t("Repeat once failed words."); }
-	};
+	private final Var<Boolean> repeat;
+	private final EnumVar<Test.Type> type;
 	
-	public ConfigPage(Window window, Var<LanguageModel> current_language) {
+	/**
+	 * Get the selected themes.
+	 * @return	Selected themes.
+	 */
+	public CollectionVar<Theme> getSelectedThemes() {
+		return subset;
+	}
+	
+	public ConfigPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
 		super(window);
 		this.current_language = current_language;
-		repeat.setObject(app.config);
+		this.test = test;
+		type = new EnumVar<Test.Type>(new Accessor.Config<Test.Type>(app.config, "type"), app.i18n) {
+			@Override public String getLabel() { return app.t("Exercise"); }
+			@Override public String getHelp() { return app.t("Find foreign word from native word and the reverse."); }
+		};
+		repeat = new Var.Config<Boolean>(app.config, "repeat") {
+			@Override public String getLabel() { return app.t("Repeat"); }
+			@Override public String getHelp() { return app.t("Repeat once failed words."); }
+		};
 	}
 	
 	@Override
@@ -64,8 +82,10 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 	public void make() {
 		change(current_language);
 		Container body = page.addBox(Component.VERTICAL);
-		Container hbody = body.addBox(Component.HORIZONTAL);
+		Box hbody = body.addBox(Component.HORIZONTAL);
+		hbody.setAlign(Component.TOP);
 		Form form = hbody.addForm(Form.STYLE_TWO_COLUMN, learn);
+		form.addEnumField(type);
 		form.addCheckBox(repeat);
 		form.setButtonVisible(false);
 		SubsetField<Theme> sset = hbody.addSubsetField(themes);
@@ -74,7 +94,7 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 				return String.format(app.t("%s (%d words)"), theme.getNative(), theme.getWords().size());
 			}
 		});
-		subset = sset.getSubset();
+		sset.setSubset(subset);
 		learn.add(subset);
 		ActionBar bar = body.addActionBar();
 		bar.add(learn);
@@ -87,4 +107,14 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		themes.setCollection(current_language.get().get().getThemes());
 	}
 
+	/**
+	 * Do a atraining sessions.
+	 */
+	private void doTrain() {
+		TestManager ntest = type.get().getTest(current_language.get().get(), themes.getCollection());
+		if(app.config.repeat)
+			ntest = new RepeatTest(ntest);
+		test.set(ntest);
+		window.doTrain();
+	}
 }

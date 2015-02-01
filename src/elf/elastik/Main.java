@@ -3,13 +3,10 @@ package elf.elastik;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Locale;
-import java.util.Vector;
 
-import elf.app.AutoConfiguration;
 import elf.data.Version;
-import elf.ui.I18N;
 import elf.ui.Icon;
-import elf.ui.IconManager;
+import elf.ui.I18N;
 import elf.ui.meta.CollectionVar;
 import elf.ui.meta.LateLoader;
 
@@ -19,10 +16,10 @@ import elf.ui.meta.LateLoader;
  */
 public class Main extends elf.app.Application {
 	public static final String APP_NAME = "Elastik";
-	Configuration config = new Configuration();
+	Configuration config = new Configuration(this);
 	CollectionVar<LanguageModel> langs = new CollectionVar<LanguageModel>(new LinkedList<LanguageModel>());
 	I18N i18n;
-	IconManager iman = new IconManager(Main.class.getResource("/pix/"));
+	Icon.Manager iman = new Icon.Manager(Main.class.getResource("/pix/"));
 	private LanguageModel.Context context;
 
 	public Main() {
@@ -37,7 +34,8 @@ public class Main extends elf.app.Application {
 	 * @return		Found icon.
 	 */
 	public Icon getIcon(String name) {
-		return iman.get(name);
+		Icon icon = iman.get(name); 
+		return icon;
 	}
 	
 	/**
@@ -74,40 +72,6 @@ public class Main extends elf.app.Application {
 	}
 
 	/**
-	 * Current configuration.
-	 * @author casse
-	 */
-	public class Configuration extends AutoConfiguration {
-		public String fname = "", lname = "", nat;
-		public Vector<String> langs = new Vector<String>();
-		public boolean repeat = false;
-		
-		public Configuration() {
-			super(Main.this, "config");
-			nat = Locale.getDefault().getLanguage();
-		}
-		
-		public void addLanguage(String lang) {
-			langs.add(lang);
-			modify();
-		}
-		
-		public void removeLanguage(String lang) {
-			langs.remove(lang);
-			modify();
-		}
-		
-		public boolean getRepeat() {
-			return repeat;
-		}
-		
-		public void setRepeat(boolean repeat) {
-			this.repeat = repeat;
-			modify();
-		}
-	}
-	
-	/**
 	 * Add a language.
 	 * @param name	Added language name.
 	 */
@@ -131,12 +95,43 @@ public class Main extends elf.app.Application {
 
 		// save languages
 		for(LateLoader<Language, String> lang: langs)
-			if(lang.isReady() && lang.get().isModified())
+			if(lang.isLoaded() && lang.get().isModified())
 				try {
 					lang.get().save();
 				} catch (IOException e) {
 					System.err.printf("ERROR: cannot save %s: %s", lang.get().getName(), e.getLocalizedMessage());
 				}
+	}
+
+	/**
+	 * Get the display name from a language tag.
+	 * @param tag	Language tag.
+	 * @return		Display name.
+	 */
+	public static String getLanguageDisplay(String tag) {
+		return Locale.forLanguageTag(tag).getDisplayLanguage();
+	}
+
+	@Override
+	public String getLicense() {
+		return "Copyright (c) 2015 - LGPL v3";
+	}
+
+	@Override
+	public String getSite() {
+		return "http://www.elastik.fr";
+	}
+
+	@Override
+	public String[] getAuthors() {
+		return new String[] {
+			"Hugues Cassé"
+		};
+	}
+
+	@Override
+	public Icon getLogo() {
+		return this.getIcon("logo");
 	}
 
 }

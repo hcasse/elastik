@@ -11,17 +11,17 @@ import elf.store.XMLStructuredStore;
  */
 public class Word {
 	private UUID uuid;
-	private String nat, word;
+	private String nat, fore;
 	
 	/**
 	 * Build a word.
 	 * @param nat		Native version.
-	 * @param word		Language version.
+	 * @param fore		Language version.
 	 */
-	public Word(String nat, String word) {
+	public Word(String nat, String fore) {
 		uuid = UUID.randomUUID();
 		this.nat = nat;
-		this.word = word;
+		this.fore = fore;
 	}
 	
 	/**
@@ -46,7 +46,7 @@ public class Word {
 		nat = (String)load.get(String.class);
 		if(!load.getField("word"))
 			throw new IOException("mal-formed word: no language word");
-		word = (String)load.get(String.class);
+		fore = (String)load.get(String.class);
 	}
 	
 	/**
@@ -60,7 +60,7 @@ public class Word {
 		save.putField("nat");
 		save.put(nat);
 		save.putField("word");
-		save.put(word);
+		save.put(fore);
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class Word {
 	 * Get the word in current language.
 	 * @return	Current language word.
 	 */
-	public String getWord() {
-		return word;
+	public String getForeign() {
+		return fore;
 	}
 }

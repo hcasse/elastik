@@ -152,7 +152,7 @@ public class Language {
 				all.add(word);
 				map.put(word.getID(), word);
 				load.end();
-				System.out.println("- " + word.getNative() + " / " + word.getWord());
+				System.out.println("- " + word.getNative() + " / " + word.getForeign());
 			}
 			load.end();
 		}

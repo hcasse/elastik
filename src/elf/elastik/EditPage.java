@@ -3,17 +3,16 @@ package elf.elastik;
 import java.util.Locale;
 import java.util.Vector;
 
+import elf.ui.Icon;
 import elf.ui.ActionBar;
 import elf.ui.Button;
 import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.Displayer;
-import elf.ui.Icon;
 import elf.ui.List;
 import elf.ui.SplitPane;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
-import elf.ui.meta.SingleVar;
 import elf.ui.meta.Var;
 import elf.ui.meta.Var.Listener;
 
@@ -31,9 +30,9 @@ import elf.ui.meta.Var.Listener;
  */
 public class EditPage extends ApplicationPage implements Listener<LanguageModel> {
 	private boolean updated = false;
-	private final SingleVar<LanguageModel> current_language;
-	private final SingleVar<Theme> current_theme = new SingleVar<Theme>();
-	private final SingleVar<Word> current_word = new SingleVar<Word>();
+	private final Var<LanguageModel> current_language;
+	private final Var<Theme> current_theme = new Var<Theme>();
+	private final Var<Word> current_word = new Var<Word>();
 	private final CollectionVar<Theme> themes = new CollectionVar<Theme>(new Vector<Theme>()); 
 	private final CollectionVar<Word> words = new CollectionVar<Word>(new Vector<Word>()); 
 	
@@ -41,7 +40,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 	 * Build the page.
 	 * @param window	Owner window.
 	 */
-	public EditPage(Window window, SingleVar<LanguageModel> current_language) {
+	public EditPage(Window window, Var<LanguageModel> current_language) {
 		super(window);
 		this.current_language = current_language;
 		current_language.addListener(this);		
@@ -51,7 +50,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 	 * Get the current theme.
 	 * @return	Current theme.
 	 */
-	public SingleVar<Theme> getCurrentTheme() {
+	public Var<Theme> getCurrentTheme() {
 		return current_theme;
 	}
 	
@@ -67,6 +66,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 
 	@Override
 	public void onShow() {
+		super.onShow();
 		getPage();
 		if(updated) {
 			themes.setCollection(current_language.get().get().getThemes());
@@ -120,7 +120,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		List<Word> word_list = wc.addList(words);
 		word_list.setSelector(current_word);
 		word_list.setDisplayer(new Displayer<Word>() {
-			@Override public String asString(Word value) { return value.getWord() + " / " + value.getNative(); }		
+			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }		
 		});
 		current_theme.addListener(new Listener<Theme>() {
 			@Override public void change(Var<Theme> data) {

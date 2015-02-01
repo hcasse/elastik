@@ -1,11 +1,11 @@
 package elf.elastik;
 
+import elf.ui.Icon;
 import elf.ui.Component;
 import elf.ui.Form;
-import elf.ui.Icon;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
-import elf.ui.meta.SingleVar;
+import elf.ui.meta.Var;
 
 /**
  * Page to edit a word.
@@ -17,15 +17,15 @@ import elf.ui.meta.SingleVar;
  * @author casse
  */
 public class WordPage extends ApplicationPage {
-	private SingleVar<LanguageModel> lang;
-	private SingleVar<Theme> theme;
+	private Var<LanguageModel> lang;
+	private Var<Theme> theme;
 	private CollectionVar<Word> words;
 
-	private SingleVar<String> nat_word = new SingleVar<String>("") {
+	private Var<String> nat_word = new Var<String>("") {
 		@Override public String getLabel() { return app.t("Native Word"); }
 	};
 
-	private SingleVar<String> for_word = new SingleVar<String>("") {
+	private Var<String> for_word = new Var<String>("") {
 		@Override public String getLabel() { return app.t("Foreign Word"); }
 	};
 
@@ -45,7 +45,7 @@ public class WordPage extends ApplicationPage {
 		@Override public String getLabel() { return app.t("Next"); }
 	};
 
-	public WordPage(Window window, SingleVar<LanguageModel> lang, SingleVar<Theme> theme, CollectionVar<Word> words) {
+	public WordPage(Window window, Var<LanguageModel> lang, Var<Theme> theme, CollectionVar<Word> words) {
 		super(window);
 		this.lang = lang;
 		this.theme = theme;

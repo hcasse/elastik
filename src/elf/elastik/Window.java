@@ -8,9 +8,8 @@ import elf.ui.PagePane;
 import elf.ui.PagePane.Page;
 import elf.ui.TitleBar;
 import elf.ui.View;
-import elf.ui.meta.AbstractEntity;
 import elf.ui.meta.Action;
-import elf.ui.meta.SingleVar;
+import elf.ui.meta.Var;
 
 /**
  * Main window.
@@ -18,7 +17,7 @@ import elf.ui.meta.SingleVar;
  */
 class Window {
 	private Main app;
-	private final SingleVar<LanguageModel> current_language = new SingleVar<LanguageModel>();
+	private final Var<LanguageModel> current_language = new Var<LanguageModel>();
 	private final Monitor mon;
 	private TitleBar tbar;
 	private final View view;
@@ -28,19 +27,20 @@ class Window {
 	private final WordPage word_page;
 	private final ConfigPage config_page;
 	private final TrainPage train_page;
+	private final CompletionPage comp_page;
+	private final Var<Test> current_test = new Var<Test>();
 	
 	public Window(Main app) {
 		this.app = app;
 
 		// build the main box
-		view = OS.os.getUI().makeView(new AbstractEntity() {
-			@Override public String getLabel() { return Window.this.app.getName() + " " + Window.this.app.getVersion(); }
-		});
+		view = OS.os.getUI().makeView(app);
 		mon = view.getMonitor();
 		Container mbox = view.addBox(Component.VERTICAL);
 		tbar = mbox.addTitleBar();
 		page_pane = mbox.addPagePane();
 		tbar.addMenu(page_pane.getBackAction());
+		tbar.addMenu(app.getAboutAction(view));
 		tbar.addMenu(Action.QUIT);
 		tbar.addLeft(page_pane.getBackAction());
 		
@@ -48,8 +48,9 @@ class Window {
 		main_page = new MainPage(this, current_language);
 		edit_page = new EditPage(this, current_language);
 		word_page = new WordPage(this, current_language, edit_page.getCurrentTheme(), edit_page.getWords());
-		config_page = new ConfigPage(this, current_language);
-		train_page = new TrainPage(this, current_language);
+		config_page = new ConfigPage(this, current_language, current_test);
+		train_page = new TrainPage(this, current_language, current_test);
+		comp_page = new CompletionPage(this, current_test);
 
 		// open all
 		tbar.setTitle(main_page.getTitle());
@@ -133,11 +134,26 @@ class Window {
 	}
 	
 	/**
+	 * Display completion page.
+	 */
+	public void doCompletion() {
+		set(comp_page);
+	}
+	
+	/**
 	 * Make the given page active.
 	 * @param page	Page to make active.
 	 */
 	private void add(ApplicationPage page) {
 		page_pane.push(page.getPage());
-		tbar.setTitle(page.getTitle());
 	}
+	
+	/**
+	 * Set the current page (replacing the previous one).
+	 * @param page		Replacing page.
+	 */
+	private void set(ApplicationPage page) {
+		page_pane.set(page.getPage());
+	}
+	
 }
