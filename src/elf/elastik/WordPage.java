@@ -33,7 +33,7 @@ public class WordPage extends ApplicationPage {
 		@Override public void run() { addOne(); }
 		@Override public boolean isEnabled() { return check(); }
 		@Override public String getHelp() { return app.t("Add one word and leave."); }
-		@Override public Icon getIcon() { return app.getIcon("add_one"); }
+		@Override public Icon getIcon() { return Main.getIcon("add_one"); }
 		@Override public String getLabel() { return app.t("Add"); }
 	};
 
@@ -41,7 +41,7 @@ public class WordPage extends ApplicationPage {
 		@Override public void run() { addMulti(); }
 		@Override public boolean isEnabled() { return check(); }
 		@Override public String getHelp() { return app.t("Add one word and continue."); }
-		@Override public Icon getIcon() { return app.getIcon("add_multi"); }
+		@Override public Icon getIcon() { return Main.getIcon("add_multi"); }
 		@Override public String getLabel() { return app.t("Next"); }
 	};
 
@@ -104,7 +104,8 @@ public class WordPage extends ApplicationPage {
 
 	@Override
 	public void make() {
-		Form form = page.addForm(Form.STYLE_VERTICAL, add_multi);
+		Form form = page.addForm(add_multi);
+		form.setStyle(Form.STYLE_VERTICAL);
 		form.addAction(add_one);
 		form.setButtonAlignment(Component.RIGHT);
 		form.addTextField(for_word);

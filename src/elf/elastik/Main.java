@@ -1,6 +1,8 @@
 package elf.elastik;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Locale;
 
@@ -16,10 +18,12 @@ import elf.ui.meta.LateLoader;
  */
 public class Main extends elf.app.Application {
 	public static final String APP_NAME = "Elastik";
+	private static final Hashtable<String, String> lang_names = new Hashtable<String, String>();
+	private static final Hashtable<String, Icon> lang_icons = new Hashtable<String, Icon>();
 	Configuration config = new Configuration(this);
 	CollectionVar<LanguageModel> langs = new CollectionVar<LanguageModel>(new LinkedList<LanguageModel>());
 	I18N i18n;
-	Icon.Manager iman = new Icon.Manager(Main.class.getResource("/pix/"));
+	static Icon.Manager iman = new Icon.Manager(Main.class.getResource("/pix/"));
 	private LanguageModel.Context context;
 
 	public Main() {
@@ -33,7 +37,7 @@ public class Main extends elf.app.Application {
 	 * @param name	Icon name.
 	 * @return		Found icon.
 	 */
-	public Icon getIcon(String name) {
+	public static Icon getIcon(String name) {
 		Icon icon = iman.get(name); 
 		return icon;
 	}
@@ -109,7 +113,35 @@ public class Main extends elf.app.Application {
 	 * @return		Display name.
 	 */
 	public static String getLanguageDisplay(String tag) {
-		return Locale.forLanguageTag(tag).getDisplayLanguage();
+		String name = lang_names.get(tag);
+		if(name == null) {
+			name = Locale.forLanguageTag(tag).getDisplayLanguage();
+			lang_names.put(tag, name);
+		}
+		return name;
+	}
+	
+	/**
+	 * Get the language icon for a language tag.
+	 * @param tag	Language tag.
+	 * @return		Matching icon or null.
+	 */
+	public static Icon getLanguageIcon(String tag) {
+		Icon icon = lang_icons.get(tag);
+		if(icon == null) {
+			icon = getIcon("flag-" + tag);
+			try {
+				InputStream stream = icon.getURL().openStream();
+				stream.close();
+			} catch (IOException e) {
+				icon = Icon.BROKEN;
+			}
+			lang_icons.put(tag, icon);
+		}
+		if(icon == Icon.BROKEN)
+			return null;
+		else
+			return icon;
 	}
 
 	@Override
@@ -131,7 +163,7 @@ public class Main extends elf.app.Application {
 
 	@Override
 	public Icon getLogo() {
-		return this.getIcon("logo");
+		return getIcon("logo");
 	}
 
 }

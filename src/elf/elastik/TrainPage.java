@@ -4,6 +4,7 @@ import elf.os.OS;
 import elf.ui.Box;
 import elf.ui.Component;
 import elf.ui.Form;
+import elf.ui.Icon;
 import elf.ui.ProgressBar;
 import elf.ui.StatusBar;
 import elf.ui.TextField;
@@ -44,9 +45,11 @@ public class TrainPage extends ApplicationPage {
 	private final Var<Test> test;
 	private Var<String> text1 = new Var<String>("") {
 		@Override public String getLabel() { return Main.getLanguageDisplay(test.get().getQuestionLang()); }
+		@Override public Icon getIcon() { return Main.getLanguageIcon(test.get().getQuestionLang()); }		
 	};
 	private Var<String> text2 = new Var<String>("") {
 		@Override public String getLabel() { return Main.getLanguageDisplay(test.get().getAskedLang()); }
+		@Override public Icon getIcon() { return Main.getLanguageIcon(test.get().getAskedLang()); }		
 	};
 	private Action submit = new Action() {
 		@Override public void run() { if(!done) { done = true; checkWord(); } }
@@ -68,7 +71,8 @@ public class TrainPage extends ApplicationPage {
 	public void make() {
 		page.setListener(this);
 		Box body = page.addBox(Component.VERTICAL);
-		Form form = body.addForm(Form.STYLE_VERTICAL, submit);
+		Form form = body.addForm(submit);
+		form.setStyle(Form.STYLE_VERTICAL);
 		TextField<String> field = form.addTextField(text1);
 		field.setReadOnly(true);
 		test.listenForEntity(text1);

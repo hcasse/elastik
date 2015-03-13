@@ -2,11 +2,11 @@ package elf.elastik;
 
 import java.util.Locale;
 
+import elf.ui.AbstractDisplayer;
 import elf.ui.ActionBar;
 import elf.ui.Box;
 import elf.ui.Component;
 import elf.ui.Container;
-import elf.ui.Displayer;
 import elf.ui.Form;
 import elf.ui.SubsetField;
 import elf.ui.meta.Accessor;
@@ -84,12 +84,13 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		Container body = page.addBox(Component.VERTICAL);
 		Box hbody = body.addBox(Component.HORIZONTAL);
 		hbody.setAlign(Component.TOP);
-		Form form = hbody.addForm(Form.STYLE_TWO_COLUMN, learn);
+		Form form = hbody.addForm(learn);
+		form.setStyle(Form.STYLE_TWO_COLUMN);
 		form.addEnumField(type);
 		form.addCheckBox(repeat);
 		form.setButtonVisible(false);
 		SubsetField<Theme> sset = hbody.addSubsetField(themes);
-		sset.setDisplayer(new Displayer<Theme>() {
+		sset.setDisplayer(new AbstractDisplayer<Theme>() {
 			@Override public String asString(Theme theme) {
 				return String.format(app.t("%s (%d words)"), theme.getNative(), theme.getWords().size());
 			}

@@ -22,7 +22,7 @@ public class CompletionPage extends ApplicationPage {
 	private Action stop = new Action() {
 		@Override public void run() { window.doBack(); }
 		@Override public String getLabel() { return app.t("Stop"); }
-		@Override public String getHelp() { return app.t("Stop the text and go back to test configuration page."); }
+		@Override public String getHelp() { return app.t("Stop the test and go back to test configuration page."); }
 	};
 	
 	public CompletionPage(Window window, Var<Test> test) {

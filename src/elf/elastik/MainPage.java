@@ -8,7 +8,8 @@ import java.util.Vector;
 import elf.ui.ActionBar;
 import elf.ui.Component;
 import elf.ui.Container;
-import elf.ui.Displayer;
+import elf.ui.AbstractDisplayer;
+import elf.ui.Icon;
 import elf.ui.List;
 import elf.ui.SelectionDialog;
 import elf.ui.meta.Action;
@@ -84,7 +85,7 @@ public class MainPage extends ApplicationPage {
 				app.t("Language selection"),
 				locs);
 		dialog.setAction(app.t("Select"));
-		dialog.setDisplayer(new Displayer<Locale>() {
+		dialog.setDisplayer(new AbstractDisplayer<Locale>() {
 			@Override public String asString(Locale value) { return value.getDisplayLanguage(); }
 		});
 		Locale loc = dialog.show();
@@ -128,10 +129,17 @@ public class MainPage extends ApplicationPage {
 		// build the list
 		List<LanguageModel> list = body.addList(app.langs);
 		list.setSelector(lang);
-		list.setDisplayer(new Displayer<LanguageModel>() {
+		list.setDisplayer(new AbstractDisplayer<LanguageModel>() {
+			
 			@Override public String asString(LanguageModel value) {
-				return Locale.forLanguageTag(value.getID()).getDisplayName();
+				return Main.getLanguageDisplay(value.getID());
 			}
+
+			@Override
+			public Icon getIcon(LanguageModel value) {
+				return Main.getLanguageIcon(value.getID());
+			}
+			
 		});
 		
 		// build the button bar

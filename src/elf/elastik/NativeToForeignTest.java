@@ -33,7 +33,7 @@ public class NativeToForeignTest extends AbstractTest {
 
 	@Override
 	public String checkAnswer(String answer) {
-		if(word.getForeign().equals(answer)) {
+		if(word.getForeign().equalsIgnoreCase(answer)) {
 			succeeded();
 			return null;
 		}

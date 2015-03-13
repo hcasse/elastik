@@ -8,7 +8,7 @@ import elf.ui.ActionBar;
 import elf.ui.Button;
 import elf.ui.Component;
 import elf.ui.Container;
-import elf.ui.Displayer;
+import elf.ui.AbstractDisplayer;
 import elf.ui.List;
 import elf.ui.SplitPane;
 import elf.ui.meta.Action;
@@ -92,7 +92,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		Container tc = spane.getFirst();
 		List<Theme> theme_list = tc.addList(themes);
 		theme_list.setSelector(current_theme);
-		theme_list.setDisplayer(new Displayer<Theme>() {
+		theme_list.setDisplayer(new AbstractDisplayer<Theme>() {
 			@Override public String asString(Theme value) { return value.getNative(); }				
 		});
 		ActionBar ta = tc.addActionBar();
@@ -100,13 +100,13 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		Action add_theme = new Action() {
 			@Override public String getLabel() { return "Add"; }
 			@Override public void run() { }
-			@Override public Icon getIcon() { return app.getIcon("list_add"); }
+			@Override public Icon getIcon() { return Main.getIcon("list_add"); }
 		};
 		ta.add(add_theme);
 		Action remove_theme =  new Action() {
 			@Override public String getLabel() { return "Remove"; }
 			@Override public void run() { themes.remove(current_theme.get()); }
-			@Override public Icon getIcon() { return app.getIcon("list_remove"); }
+			@Override public Icon getIcon() { return Main.getIcon("list_remove"); }
 			@Override public boolean isEnabled() {
 				return current_theme.get() != null
 					&& !EditPage.this.current_language.get().get().isAll(current_theme.get());
@@ -119,7 +119,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		Container wc = spane.getSecond();
 		List<Word> word_list = wc.addList(words);
 		word_list.setSelector(current_word);
-		word_list.setDisplayer(new Displayer<Word>() {
+		word_list.setDisplayer(new AbstractDisplayer<Word>() {
 			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }		
 		});
 		current_theme.addListener(new Listener<Theme>() {
@@ -135,7 +135,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		Action add_word = new Action() {
 			@Override public String getLabel() { return "Add"; }
 			@Override public void run() { EditPage.this.window.doAdd();  }
-			@Override public Icon getIcon() { return app.getIcon("list_add"); }
+			@Override public Icon getIcon() { return Main.getIcon("list_add"); }
 			@Override public boolean isEnabled() { return current_theme.get() != null; }
 		};
 		add_word.add(current_theme);
@@ -143,7 +143,7 @@ public class EditPage extends ApplicationPage implements Listener<LanguageModel>
 		Action remove_word =  new Action() {
 			@Override public String getLabel() { return "Remove"; }
 			@Override public void run() { words.remove(current_word.get()); EditPage.this.current_language.get().get().modify();  }
-			@Override public Icon getIcon() { return app.getIcon("list_remove"); }
+			@Override public Icon getIcon() { return Main.getIcon("list_remove"); }
 			@Override public boolean isEnabled() { return current_word.get() != null; }
 		};
 		remove_word.add(word_list.getSelector());
