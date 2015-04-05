@@ -104,7 +104,8 @@ public class WordPage extends ApplicationPage {
 
 	@Override
 	public void make() {
-		Form form = page.addForm(add_multi);
+		Form form = page.addForm();
+		form.addAction(add_multi);
 		form.setStyle(Form.STYLE_VERTICAL);
 		form.addAction(add_one);
 		form.setButtonAlignment(Component.RIGHT);

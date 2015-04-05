@@ -102,8 +102,8 @@ public class MainPage extends ApplicationPage {
 		LanguageModel lang = this.lang.get();
 		Locale loc = Locale.forLanguageTag(lang.getID());
 		if(window.getView().showConfirmDialog(
-		String.format(app.t("Do you want to remove %s?"), loc.getDisplayName()),
-		app.t("Language Removal")))
+				String.format(app.t("Do you want to remove %s?"), loc.getDisplayName()),
+				app.t("Language Removal")))
 			app.removeLanguage(lang);
 	}
 
@@ -150,6 +150,12 @@ public class MainPage extends ApplicationPage {
 		abar.add(learn);
 		abar.add(edit);
 		abar.add(remove);
+	}
+
+	@Override
+	public void onShow() {
+		super.onShow();
+		lang.fireChange();
 	}
 	
 }

@@ -13,20 +13,19 @@ import elf.store.StructuredStore.Save;
  * Represent a theme in the words, i.e., logical word collection.
  * @author casse
  */
-public class Theme extends Word {
+public class Theme {
 	private Language lang;
 	private LinkedList<Word> words = new LinkedList<Word>();
+	private String name;
 	
 	/**
 	 * Build a new theme.
 	 * @param lang		Owner language.
-	 * @param nat		Theme in native language.
-	 * @param word		Theme in target language.
+	 * @param nat		Theme name.
 	 */
-	public Theme(Language lang, String nat, String word) {
-		super(nat, word);
+	public Theme(Language lang, String name) {
 		this.lang = lang;
-		lang.add(this);
+		this.name = name;
 	}
 	
 	/**
@@ -37,8 +36,14 @@ public class Theme extends Word {
 	 * @throws IOException	Thrown with IO error.
 	 */
 	public Theme(Language lang, Load load, Map<UUID, Word> map) throws IOException {
-		super(load);
 		this.lang = lang;
+		
+		// get name
+		if(!load.getField("name"))
+			throw new IOException("theme without name");
+		name = (String)load.get(String.class);
+		
+		// get words
 		if(load.getField("words")) {
 			int n = load.getList();
 			for(int i = 0; i < n; i++) {
@@ -54,11 +59,20 @@ public class Theme extends Word {
 	}
 	
 	/**
+	 * Get theme name.
+	 * @return	Theme name.
+	 */
+	public String getName() {
+		return name;
+	}
+	
+	/**
 	 * Save to a store.
 	 * @param save	Saving handler.
 	 */
 	public void save(Save save) throws IOException {
-		super.save(save);
+		save.putField("name");
+		save.put(name);
 		save.putField("words");
 		save.putList();
 		for(Word word: words)

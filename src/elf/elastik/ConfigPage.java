@@ -27,7 +27,7 @@ import elf.ui.meta.Var;
  * 
  * @author casse
  */
-public class ConfigPage extends ApplicationPage implements Var.Listener<LanguageModel> {
+public class ConfigPage extends ApplicationPage implements Var.ChangeListener<LanguageModel> {
 	private Var<LanguageModel> current_language;
 	private CollectionVar<Theme> themes = new CollectionVar<Theme>();
 	private CollectionVar<Theme> subset = new CollectionVar<Theme>();
@@ -84,7 +84,8 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		Container body = page.addBox(Component.VERTICAL);
 		Box hbody = body.addBox(Component.HORIZONTAL);
 		hbody.setAlign(Component.TOP);
-		Form form = hbody.addForm(learn);
+		Form form = hbody.addForm();
+		form.addAction(learn);
 		form.setStyle(Form.STYLE_TWO_COLUMN);
 		form.addEnumField(type);
 		form.addCheckBox(repeat);
@@ -92,7 +93,7 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		SubsetField<Theme> sset = hbody.addSubsetField(themes);
 		sset.setDisplayer(new AbstractDisplayer<Theme>() {
 			@Override public String asString(Theme theme) {
-				return String.format(app.t("%s (%d words)"), theme.getNative(), theme.getWords().size());
+				return String.format(app.t("%s (%d words)"), theme.getName(), theme.getWords().size());
 			}
 		});
 		sset.setSubset(subset);
@@ -100,7 +101,7 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 		ActionBar bar = body.addActionBar();
 		bar.add(learn);
 		bar.setAlignment(Component.RIGHT);
-		current_language.addListener(this);
+		current_language.addChangeListener(this);
 	}
 
 	@Override
@@ -109,10 +110,10 @@ public class ConfigPage extends ApplicationPage implements Var.Listener<Language
 	}
 
 	/**
-	 * Do a atraining sessions.
+	 * Do a a training sessions.
 	 */
 	private void doTrain() {
-		TestManager ntest = type.get().getTest(current_language.get().get(), themes.getCollection());
+		TestManager ntest = type.get().getTest(current_language.get().get(), subset.getCollection());
 		if(app.config.repeat)
 			ntest = new RepeatTest(ntest);
 		test.set(ntest);

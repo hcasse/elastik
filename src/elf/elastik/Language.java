@@ -30,7 +30,8 @@ public class Language {
 	 * @param all_name	Native name for all.
 	 */
 	public Language(String nat, String lang, boolean is_new, String all_name) {
-		all = new Theme(this, all_name, all_name);
+		all = new Theme(this, all_name);
+		add(all);
 		this.nat = nat;
 		this.name = lang;
 		loaded = is_new;

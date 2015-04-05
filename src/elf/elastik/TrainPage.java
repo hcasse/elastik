@@ -71,7 +71,8 @@ public class TrainPage extends ApplicationPage {
 	public void make() {
 		page.setListener(this);
 		Box body = page.addBox(Component.VERTICAL);
-		Form form = body.addForm(submit);
+		Form form = body.addForm();
+		form.addAction(submit);
 		form.setStyle(Form.STYLE_VERTICAL);
 		TextField<String> field = form.addTextField(text1);
 		field.setReadOnly(true);
