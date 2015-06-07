@@ -1,4 +1,4 @@
-package elf.elastik;
+package elf.elastik.data;
 
 import java.io.IOException;
 import java.util.UUID;

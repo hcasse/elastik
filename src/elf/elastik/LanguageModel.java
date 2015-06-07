@@ -3,6 +3,7 @@ package elf.elastik;
 import java.io.IOException;
 import java.util.Locale;
 
+import elf.elastik.data.Language;
 import elf.ui.meta.LateLoader;
 
 /**

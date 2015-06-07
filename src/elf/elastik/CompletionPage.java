@@ -1,5 +1,6 @@
 package elf.elastik;
 
+import elf.elastik.test.Test;
 import elf.ui.ActionBar;
 import elf.ui.Box;
 import elf.ui.Component;
@@ -24,7 +25,7 @@ public class CompletionPage extends ApplicationPage {
 		@Override public String getLabel() { return app.t("Stop"); }
 		@Override public String getHelp() { return app.t("Stop the test and go back to test configuration page."); }
 	};
-	
+
 	public CompletionPage(Window window, Var<Test> test) {
 		super(window);
 		this. test = test;
@@ -48,18 +49,18 @@ public class CompletionPage extends ApplicationPage {
 	@Override
 	public void onShow() {
 		super.onShow();
-		
+
 		// compute stats
-		int words = test.get().getWordCount();
-		int good = test.get().getSuccessCount();
+		int words = test.get().getQuestionNumber();
+		int good = test.get().getSucceededNumber();
 		int retry = test.get().getTryCount() - words;
 		int good_percent = good * 100 / test.get().getTryCount();
 		int retry_percent = retry * 100 / words;
-		
+
 		// display title
 		area.clear();
 		area.display(app.t("<big>Test completed!</big>"));
-		
+
 		// display stars
 		StringBuffer buf = new StringBuffer();
 		buf.append("<p>");
@@ -72,7 +73,7 @@ public class CompletionPage extends ApplicationPage {
 			buf.append(empty_star);
 		buf.append("</p>");
 		area.display(buf.toString());
-		
+
 		// display stats
 		buf = new StringBuffer();
 		buf.append("<br/><table><tr><td align=\"right\"><b>");
@@ -90,7 +91,7 @@ public class CompletionPage extends ApplicationPage {
 		buf.append("</td></tr><tr><td align=\"right\"><b>");
 		buf.append(app.t("time"));
 		buf.append("</b></td><td>");
-		buf.append(test.get().getDuration().toString());
+		buf.append((float)test.get().getDuration() / 1000 + "s");
 		buf.append("</td></tr></table>");
 		area.display(buf.toString());
 	}

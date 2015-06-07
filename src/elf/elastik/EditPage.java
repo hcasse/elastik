@@ -3,6 +3,8 @@ package elf.elastik;
 import java.util.Locale;
 import java.util.Vector;
 
+import elf.elastik.data.Theme;
+import elf.elastik.data.Word;
 import elf.ui.Dialog;
 import elf.ui.ErrorManager;
 import elf.ui.Form;

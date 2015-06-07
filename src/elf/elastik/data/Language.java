@@ -1,4 +1,4 @@
-package elf.elastik;
+package elf.elastik.data;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import elf.elastik.Main;
 import elf.os.OS;
 import elf.store.Storage;
 import elf.store.StructuredStore;
@@ -58,7 +59,7 @@ public class Language {
 	/**
 	 * Annotate the language as modified.
 	 */
-	void modify() {
+	public void modify() {
 		modified = true;
 	}
 	

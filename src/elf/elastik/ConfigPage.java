@@ -2,6 +2,13 @@ package elf.elastik;
 
 import java.util.Locale;
 
+import elf.elastik.Configuration.TestType;
+import elf.elastik.data.Theme;
+import elf.elastik.test.BasicTest;
+import elf.elastik.test.OneAnswerProducer;
+import elf.elastik.test.RandomManager;
+import elf.elastik.test.RepeatManager;
+import elf.elastik.test.Test;
 import elf.ui.AbstractDisplayer;
 import elf.ui.ActionBar;
 import elf.ui.Box;
@@ -17,14 +24,14 @@ import elf.ui.meta.Var;
 
 /**
  * Configuration page for learn phase.
- * 
+ *
  * +--------+--------+
  * | config | themes |
  * | option |        |
  * |		|		 |
  * +--------+--------+
  * 			   [start]
- * 
+ *
  * @author casse
  */
 public class ConfigPage extends ApplicationPage implements Var.ChangeListener<LanguageModel> {
@@ -32,7 +39,7 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 	private CollectionVar<Theme> themes = new CollectionVar<Theme>();
 	private CollectionVar<Theme> subset = new CollectionVar<Theme>();
 	private final Var<Test> test;
-	
+
 	private final Action learn = new Action() {
 		@Override public void run() { doTrain(); }
 		@Override public String getLabel() { return app.t("Learn"); }
@@ -47,10 +54,10 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 			return enabled;
 		}
 	};
-	
+
 	private final Var<Boolean> repeat;
-	private final EnumVar<Test.Type> type;
-	
+	private final EnumVar<TestType> type;
+
 	/**
 	 * Get the selected themes.
 	 * @return	Selected themes.
@@ -58,12 +65,12 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 	public CollectionVar<Theme> getSelectedThemes() {
 		return subset;
 	}
-	
+
 	public ConfigPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
 		super(window);
 		this.current_language = current_language;
 		this.test = test;
-		type = new EnumVar<Test.Type>(new Accessor.Config<Test.Type>(app.config, "type"), app.i18n) {
+		type = new EnumVar<TestType>(new Accessor.Config<TestType>(app.config, "type"), app.i18n) {
 			@Override public String getLabel() { return app.t("Exercise"); }
 			@Override public String getHelp() { return app.t("Find foreign word from native word and the reverse."); }
 		};
@@ -72,7 +79,7 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 			@Override public String getHelp() { return app.t("Repeat once failed words."); }
 		};
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return String.format(app.t("Learning %s"), Locale.forLanguageTag(current_language.get().get().getName()).getDisplayLanguage());
@@ -113,9 +120,20 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 	 * Do a a training sessions.
 	 */
 	private void doTrain() {
-		TestManager ntest = type.get().getTest(current_language.get().get(), subset.getCollection());
+
+		// build the basic test
+		BasicTest ntest = new BasicTest(app.i18n);
+
+		// set the producer
+		ntest.setProducer(new OneAnswerProducer(ntest, type.get().getTest(
+			subset.getCollection(),
+			current_language.get().get().getName(),
+			current_language.get().get().getNative())));
+
+		// set the manager
+		ntest.setManager(new RandomManager());
 		if(app.config.repeat)
-			ntest = new RepeatTest(ntest);
+			ntest.setManager(new RepeatManager(ntest.getManager()));
 		test.set(ntest);
 		window.doTrain();
 	}

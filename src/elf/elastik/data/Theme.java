@@ -1,7 +1,8 @@
-package elf.elastik;
+package elf.elastik.data;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
@@ -13,11 +14,11 @@ import elf.store.StructuredStore.Save;
  * Represent a theme in the words, i.e., logical word collection.
  * @author casse
  */
-public class Theme {
+public class Theme implements Iterable<Word> {
 	private Language lang;
 	private LinkedList<Word> words = new LinkedList<Word>();
 	private String name;
-	
+
 	/**
 	 * Build a new theme.
 	 * @param lang		Owner language.
@@ -27,7 +28,7 @@ public class Theme {
 		this.lang = lang;
 		this.name = name;
 	}
-	
+
 	/**
 	 * Build a theme from storage.
 	 * @param lang			Owner language.
@@ -37,12 +38,12 @@ public class Theme {
 	 */
 	public Theme(Language lang, Load load, Map<UUID, Word> map) throws IOException {
 		this.lang = lang;
-		
+
 		// get name
 		if(!load.getField("name"))
 			throw new IOException("theme without name");
 		name = (String)load.get(String.class);
-		
+
 		// get words
 		if(load.getField("words")) {
 			int n = load.getList();
@@ -57,7 +58,7 @@ public class Theme {
 		}
 		lang.add(this);
 	}
-	
+
 	/**
 	 * Get theme name.
 	 * @return	Theme name.
@@ -65,7 +66,7 @@ public class Theme {
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * Save to a store.
 	 * @param save	Saving handler.
@@ -79,7 +80,7 @@ public class Theme {
 			save.put(word.getID().toString());
 		save.end();
 	}
-	
+
 	/**
 	 * Add a word to the theme.
 	 * @param word		Added word.
@@ -88,7 +89,7 @@ public class Theme {
 		lang.modify();
 		words.add(word);
 	}
-	
+
 	/**
 	 * Remove a word from the theme.
 	 * @param word		Removed word.
@@ -97,12 +98,17 @@ public class Theme {
 		lang.modify();
 		words.remove(word);
 	}
-	
+
 	/**
 	 * Get the words in the theme.
 	 * @return	Theme words.
 	 */
 	public Collection<Word> getWords() {
 		return words;
+	}
+
+	@Override
+	public Iterator<Word> iterator() {
+		return words.iterator();
 	}
 }

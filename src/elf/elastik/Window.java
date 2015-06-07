@@ -1,5 +1,6 @@
 package elf.elastik;
 
+import elf.elastik.test.Test;
 import elf.os.OS;
 import elf.ui.Component;
 import elf.ui.Container;

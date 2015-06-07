@@ -14,6 +14,7 @@ import elf.ui.List;
 import elf.ui.SelectionDialog;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
+import elf.ui.meta.Label;
 
 
 /**
@@ -46,11 +47,15 @@ public class MainPage extends ApplicationPage {
 		@Override public boolean isEnabled() { return lang.get() != null; }
 	};
 
-	Action remove = new Action() {
-		@Override public String getLabel() { return app.t("Remove"); }
-		@Override public void run() { removeLanguage(); }
-		@Override public boolean isEnabled() { return lang.get() != null; }
-	};
+	Action remove = window.getView().makeValidatedAction(
+		new Action() {
+			@Override public String getLabel() { return app.t("Remove"); }
+			@Override public void run() { removeLanguage(); }
+			@Override public boolean isEnabled() { return lang != null && lang.get() != null; }
+		},
+		new Label("") {
+			@Override public String getLabel() { return String.format(app.t("Do you want to remove %s?"), lang.get().get().getName()); }
+		});
 	
 	public MainPage(Window window, Var<LanguageModel> language) {
 		super(window);
@@ -100,11 +105,7 @@ public class MainPage extends ApplicationPage {
 	 */
 	private void removeLanguage() {
 		LanguageModel lang = this.lang.get();
-		Locale loc = Locale.forLanguageTag(lang.getID());
-		if(window.getView().showConfirmDialog(
-				String.format(app.t("Do you want to remove %s?"), loc.getDisplayName()),
-				app.t("Language Removal")))
-			app.removeLanguage(lang);
+		app.removeLanguage(lang);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Locale;
 
 import elf.data.Version;
+import elf.elastik.data.Language;
 import elf.ui.Icon;
 import elf.ui.I18N;
 import elf.ui.meta.CollectionVar;
@@ -18,6 +19,7 @@ import elf.ui.meta.LateLoader;
  */
 public class Main extends elf.app.Application {
 	public static final String APP_NAME = "Elastik";
+	public static final Version APP_VERSION = new Version(1, 2, 0);
 	private static final Hashtable<String, String> lang_names = new Hashtable<String, String>();
 	private static final Hashtable<String, Icon> lang_icons = new Hashtable<String, Icon>();
 	Configuration config = new Configuration(this);
@@ -27,7 +29,7 @@ public class Main extends elf.app.Application {
 	private LanguageModel.Context context;
 
 	public Main() {
-		super(APP_NAME, new Version(1, 0, 0));
+		super(APP_NAME, APP_VERSION);
 		i18n = new I18N(APP_NAME, new Locale[] { Locale.getDefault()});
 		context = new LanguageModel.Context(this);
 	}
@@ -38,10 +40,10 @@ public class Main extends elf.app.Application {
 	 * @return		Found icon.
 	 */
 	public static Icon getIcon(String name) {
-		Icon icon = iman.get(name); 
+		Icon icon = iman.get(name);
 		return icon;
 	}
-	
+
 	/**
 	 * Perform a translation.
 	 * @param s		String to translate.
@@ -61,7 +63,7 @@ public class Main extends elf.app.Application {
 
 	@Override
 	protected void proceed() {
-		
+
 		// prepare the list of languages
 		for(String lang: config.langs)
 			langs.add(new LanguageModel(context, lang) {
@@ -83,7 +85,7 @@ public class Main extends elf.app.Application {
 		langs.add(new LanguageModel(context, new Language(config.nat, name, true, t("all"))));
 		config.addLanguage(name);
 	}
-	
+
 	/**
 	 * Remove a language.
 	 * @param lang	Removed language.
@@ -92,7 +94,7 @@ public class Main extends elf.app.Application {
 		langs.remove(lang);
 		config.removeLanguage(lang.getID());
 	}
-	
+
 	@Override
 	protected void cleanup() {
 		super.cleanup();
@@ -120,7 +122,7 @@ public class Main extends elf.app.Application {
 		}
 		return name;
 	}
-	
+
 	/**
 	 * Get the language icon for a language tag.
 	 * @param tag	Language tag.

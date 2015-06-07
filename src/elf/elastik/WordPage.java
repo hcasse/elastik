@@ -1,5 +1,7 @@
 package elf.elastik;
 
+import elf.elastik.data.Theme;
+import elf.elastik.data.Word;
 import elf.ui.Icon;
 import elf.ui.Component;
 import elf.ui.Form;

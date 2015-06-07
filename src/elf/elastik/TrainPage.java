@@ -1,5 +1,7 @@
 package elf.elastik;
 
+import elf.elastik.test.Question;
+import elf.elastik.test.Test;
 import elf.os.OS;
 import elf.ui.Box;
 import elf.ui.Component;
@@ -13,11 +15,11 @@ import elf.ui.UI;
 import elf.ui.UI.Task;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
-import elf.util.Duration;
+
 
 /**
  * Page for training.
- * 
+ *
  * +-----------------------------+
  * | <language 1>                |
  * | [ read-only ]  [theme]      |
@@ -28,7 +30,7 @@ import elf.util.Duration;
  * | [======     train gauge    ]|
  * | {status}		       HH:MM |
  * +-----------------------------+
- * 
+ *
  * @author casse
  */
 public class TrainPage extends ApplicationPage {
@@ -37,6 +39,7 @@ public class TrainPage extends ApplicationPage {
 	private Var<Integer> progress = Var.make(0);
 	private Var<Integer> word_count = Var.make(0);
 	private Var<Integer> success = Var.make(0);
+	private Var<Question> question = Var.make(Question.NULL);
 	private TextInfo timer;
 	private TimerTask timer_task = new TimerTask();
 	private WaitTask wait_task = new WaitTask();
@@ -44,24 +47,24 @@ public class TrainPage extends ApplicationPage {
 	private boolean done = false;
 	private final Var<Test> test;
 	private Var<String> text1 = new Var<String>("") {
-		@Override public String getLabel() { return Main.getLanguageDisplay(test.get().getQuestionLang()); }
-		@Override public Icon getIcon() { return Main.getLanguageIcon(test.get().getQuestionLang()); }		
+		@Override public String getLabel() { return question.get().getLabel(); }
+		@Override public Icon getIcon() { return Main.getLanguageIcon(question.get().getQuestionLanguage()); }
 	};
 	private Var<String> text2 = new Var<String>("") {
-		@Override public String getLabel() { return Main.getLanguageDisplay(test.get().getAskedLang()); }
-		@Override public Icon getIcon() { return Main.getLanguageIcon(test.get().getAskedLang()); }		
+		@Override public String getLabel() { return app.t("Answer:"); }
+		@Override public Icon getIcon() { return Main.getLanguageIcon(question.get().getAnswerLanguage()); }
 	};
 	private Action submit = new Action() {
 		@Override public void run() { if(!done) { done = true; checkWord(); } }
 	};
 	private TextInfo info;
-	
+
 	public TrainPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
 		super(window);
 		this.current_language = current_language;
 		this.test = test;
 	}
-	
+
 	@Override
 	public String getTitle() {
 		return String.format(app.t("Training %s"), current_language.get().getForeignName());
@@ -92,22 +95,22 @@ public class TrainPage extends ApplicationPage {
 
 	private class TimerTask extends UI.Task {
 		private int m = 0, s = 0;
-		
+
 		public TimerTask() {
 			super(1000, true);
 		}
-		
+
 		public void start() {
 			timer.setText("00:00");
 			m = 0;
 			s = 0;
 			OS.os.getUI().start(this);
 		}
-		
+
 		public void stop() {
 			OS.os.getUI().stop(this);
 		}
-		
+
 		@Override
 		public void run() {
 			s++;
@@ -117,57 +120,54 @@ public class TrainPage extends ApplicationPage {
 			}
 			timer.setText(String.format("%02d:%02d", m, s));
 		}
-		
+
 	}
 
 	/**
 	 * Select the next word to display.
 	 */
 	private void nextWord() {
-		
+		question.set(test.get().next());
+
 		// process the end
-		String next = test.get().nextQuestion();
-		if(next == null) {
+		if(question.get() == null) {
 			text1.set("");
 			sbar.setDelay(StatusBar.FOREVER);
 			sbar.set(app.t("Training completed!"));
 			info.setText("");
 			OS.os.getUI().stop(timer_task);
-			test.get().setDuration(new Duration(timer_task.m * 60 + timer_task.s));
 			window.doCompletion();
 		}
-		
+
 		// select next word
 		else {
-			text1.set(next);
+			text1.set(question.get().getQuestion());
 			text2.set("");
 			info.setText("");
-			done = false;
-		}
+			done = false;		}
 	}
-	
+
 	/**
 	 * Check if the typed word is the good one.
 	 */
 	private void checkWord() {
-		String answer = test.get().checkAnswer(text2.get().toLowerCase());
-		progress.set(test.get().getWordCount() - test.get().getRemainCount());
+		String answer = test.get().check(text2.get().toLowerCase());
+		progress.set(test.get().getDoneNumber());
 		if(answer == null) {
 			sbar.set(app.t("Well done!"));
-			success.set(test.get().getSuccessCount());
+			success.set(test.get().getSucceededNumber());
 			nextWord();
 		}
 		else {
-			sbar.set(app.t("Sorry! Bad answer."));
-			info.setText(String.format(app.t("Answer should be \"%s\"."), answer));
+			info.setText(answer);
 			OS.os.getUI().start(wait_task);
 		}
 	}
-	
+
 	@Override
 	public void onShow() {
 		super.onShow();
-		word_count.set(test.get().getWordCount());
+		word_count.set(test.get().getQuestionNumber());
 		progress.set(0);
 		success.set(0);
 		getPage();
@@ -181,9 +181,9 @@ public class TrainPage extends ApplicationPage {
 		super.onHide();
 		timer_task.stop();
 	}
-	
+
 	/**
-	 * Task for wait after an answer. 
+	 * Task for wait after an answer.
 	 * @author casse
 	 */
 	private class WaitTask extends Task {
@@ -197,7 +197,7 @@ public class TrainPage extends ApplicationPage {
 			nextWord();
 			sbar.clear();
 		}
-		
+
 	}
-	
+
 }
