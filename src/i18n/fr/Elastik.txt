@@ -42,3 +42,5 @@ Training\ completed!=Test terminé !
 Training\ started:\ complete\ the\ translations!=Test démarré: fournissez les traductions !
 Well\ done!=Bravo
 words=nombre de mots
+Question\ foreign,\ answer\ native=Question en langue étrangère, réponse en langue native
+Question\ native,\ answer\ foreign=Question en langue native, réponse en langue étrangère

@@ -16,7 +16,7 @@ import elf.elastik.test.NativeToForeign;
  */
 public class Configuration extends AutoConfiguration {
 
-	enum TestType {
+	public enum TestType {
 		FOREIGN_TO_NATIVE,
 		NATIVE_TO_FOREIGN;
 
@@ -24,6 +24,14 @@ public class Configuration extends AutoConfiguration {
 			switch(this) {
 			case FOREIGN_TO_NATIVE:	return new ForeignToNative(themes, forn, natv);
 			case NATIVE_TO_FOREIGN:	return new NativeToForeign(themes, forn, natv);
+			default:				return null;
+			}
+		}
+		
+		public String getLabel() {
+			switch(this) {
+			case FOREIGN_TO_NATIVE:	return "Question foreign, answer native";
+			case NATIVE_TO_FOREIGN:	return "Question native, answer foreign";
 			default:				return null;
 			}
 		}

@@ -27,14 +27,14 @@ import elf.ui.meta.Var.ChangeListener;
 
 /**
  * Page for editing a language.
- * 
+ *
  * +---------+-----------+
  * | Theme   | Word in   |
  * | list    | the theme |
  * |         |           |
  * +---------+-----------+
- *  [+][-]    [+][-] 
- * 
+ *  [+][-]    [+][-]
+ *
  * @author casse
  */
 public class EditPage extends ApplicationPage implements ChangeListener<LanguageModel> {
@@ -42,10 +42,10 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	private final Var<LanguageModel> current_language;
 	private final Var<Theme> current_theme = new Var<Theme>();
 	private final Var<Word> current_word = new Var<Word>();
-	private final CollectionVar<Theme> themes = new CollectionVar<Theme>(new Vector<Theme>()); 
+	private final CollectionVar<Theme> themes = new CollectionVar<Theme>(new Vector<Theme>());
 	private final CollectionVar<Word> words = new CollectionVar<Word>(new Vector<Word>());
 	private CreationDialog dialog;
-	
+
 	/**
 	 * Build the page.
 	 * @param window	Owner window.
@@ -53,9 +53,9 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	public EditPage(Window window, Var<LanguageModel> current_language) {
 		super(window);
 		this.current_language = current_language;
-		current_language.addChangeListener(this);		
+		current_language.addChangeListener(this);
 	}
-	
+
 	/**
 	 * Get the current theme.
 	 * @return	Current theme.
@@ -63,7 +63,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	public Var<Theme> getCurrentTheme() {
 		return current_theme;
 	}
-	
+
 	@Override
 	public void change(Var<LanguageModel> data) {
 		updated = true;
@@ -83,7 +83,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			updated = false;
 		}
 	}
-	
+
 	/**
 	 * Get the variable of words.
 	 * @return
@@ -97,13 +97,13 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 
 		// prepare the page
 		SplitPane spane = page.addSplitPane(Component.VERTICAL);
-		
+
 		// make theme list
 		Container tc = spane.getFirst();
 		List<Theme> theme_list = tc.addList(themes);
 		theme_list.setSelector(current_theme);
 		theme_list.setDisplayer(new AbstractDisplayer<Theme>() {
-			@Override public String asString(Theme value) { return value.getName(); }				
+			@Override public String asString(Theme value) { return value.getName(); }
 		});
 		ActionBar ta = tc.addActionBar();
 		ta.setStyle(Button.STYLE_ICON);
@@ -121,16 +121,16 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 				return current_theme.get() != null
 					&& !EditPage.this.current_language.get().get().isAll(current_theme.get());
 			}
-		}, new Label(app.t("Do you want to remove this theme?"))); 
+		}, new Label(app.t("Do you want to remove this theme?")));
 		remove_theme.add(current_theme);
-		ta.add(remove_theme);		
-		
+		ta.add(remove_theme);
+
 		// make word list
 		Container wc = spane.getSecond();
 		List<Word> word_list = wc.addList(words);
 		word_list.setSelector(current_word);
 		word_list.setDisplayer(new AbstractDisplayer<Word>() {
-			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }		
+			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }
 		});
 		current_theme.addChangeListener(new ChangeListener<Theme>() {
 			@Override public void change(Var<Theme> data) {
@@ -157,9 +157,9 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			@Override public boolean isEnabled() { return current_word.get() != null; }
 		};
 		remove_word.add(word_list.getSelector());
-		wa.add(remove_word);		
+		wa.add(remove_word);
 	}
-	
+
 	/**
 	 * Implements the creation of a theme.
 	 */
@@ -168,7 +168,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			dialog = new CreationDialog();
 		dialog.run();
 	}
-	
+
 	/**
 	 * Create a theme with the given name.
 	 * @param name	Theme name.
@@ -177,13 +177,13 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 		this.themes.add(new Theme(current_language.get().get(), name));
 		current_language.get().get().modify();
 	}
-	
+
 	private class CreationDialog extends AbstractEntity {
 		Dialog dialog;
 		Var<String> name = new Var<String>("") {
 			@Override public String getLabel() { return app.t("name"); }
 		};
-		
+
 		public CreationDialog() {
 			dialog = window.getView().makeDialog(this);
 			ErrorManager eman = dialog.addErrorManager();
@@ -191,7 +191,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			form.addTextField(name);
 			form.setEnterMode(Form.ENTER_NEXT_AND_SUBMIT);
 			form.setButtonVisible(false);
-			Check check1 = new Check(form, "Theme already exists!", name) {
+			Check check1 = new Check(form, "Theme already exists!", Check.var(name)) {
 				@Override protected boolean check() {
 					for(Theme theme: current_language.get().get().getThemes())
 						if(theme.getName().equalsIgnoreCase(name.get()))
@@ -199,7 +199,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 					return true;
 				}
 			};
-			Check check2 = new Check(form, "Empty name!", name) {
+			Check check2 = new Check(form, "Empty name!", Check.var(name)) {
 				@Override protected boolean check() { return !name.get().equals(""); }
 			};
 			dialog.addCancel();
@@ -217,7 +217,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 		public String getLabel() {
 			return app.t("Theme Creation");
 		}
-		
+
 		public void run() {
 			dialog.run();
 		}

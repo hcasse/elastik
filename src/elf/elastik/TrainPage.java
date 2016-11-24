@@ -9,6 +9,7 @@ import elf.ui.Form;
 import elf.ui.Icon;
 import elf.ui.ProgressBar;
 import elf.ui.StatusBar;
+import elf.ui.Style;
 import elf.ui.TextField;
 import elf.ui.TextInfo;
 import elf.ui.UI;
@@ -58,6 +59,9 @@ public class TrainPage extends ApplicationPage {
 		@Override public void run() { if(!done) { done = true; checkWord(); } }
 	};
 	private TextInfo info;
+	
+	private Style word_style = new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.XX_LARGE));
+	private Style comment_style = new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.X_LARGE));
 
 	public TrainPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
 		super(window);
@@ -78,9 +82,11 @@ public class TrainPage extends ApplicationPage {
 		form.addAction(submit);
 		form.setStyle(Form.STYLE_VERTICAL);
 		TextField<String> field = form.addTextField(text1);
+		field.setStyle(word_style);
 		field.setReadOnly(true);
 		test.listenForEntity(text1);
 		field = form.addTextField(text2);
+		field.setStyle(word_style);
 		test.listenForEntity(text2);
 		form.setButtonVisible(false);
 		info = body.addTextInfo("");
