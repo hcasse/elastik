@@ -1,5 +1,7 @@
 package elf.elastik;
 
+import java.io.IOException;
+
 import elf.elastik.test.Question;
 import elf.elastik.test.Test;
 import elf.os.OS;
@@ -8,11 +10,13 @@ import elf.ui.Component;
 import elf.ui.Form;
 import elf.ui.Icon;
 import elf.ui.ProgressBar;
+import elf.ui.Sound;
 import elf.ui.StatusBar;
 import elf.ui.Style;
 import elf.ui.TextField;
 import elf.ui.TextInfo;
 import elf.ui.UI;
+import elf.ui.UI.Color;
 import elf.ui.UI.Task;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
@@ -60,13 +64,26 @@ public class TrainPage extends ApplicationPage {
 	};
 	private TextInfo info;
 	
-	private Style word_style = new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.XX_LARGE));
-	private Style comment_style = new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.X_LARGE));
+	private Style
+		quest_style		= new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.XX_LARGE)),
+		answer_style	= new Style(null, Style.FONT_SIZE, new Style.FontSize(Style.XX_LARGE));
 
+	private Color normal_color, failed_color, succeeded_color;
+	private Sound success_sound, error_sound;
+	
 	public TrainPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
 		super(window);
 		this.current_language = current_language;
 		this.test = test;
+		normal_color = OS.os.getUI().getColor("#0000ff");
+		failed_color = OS.os.getUI().getColor("#ff0000");
+		succeeded_color = OS.os.getUI().getColor("#00ff00");
+		try {
+			success_sound = OS.os.getUI().getSound(Main.class.getResource("/sox/success.aiff"));
+			error_sound = OS.os.getUI().getSound(Main.class.getResource("/sox/error.aiff"));
+		} catch (IOException e) {
+			// TODO log it somewhere
+		}
 	}
 
 	@Override
@@ -82,11 +99,12 @@ public class TrainPage extends ApplicationPage {
 		form.addAction(submit);
 		form.setStyle(Form.STYLE_VERTICAL);
 		TextField<String> field = form.addTextField(text1);
-		field.setStyle(word_style);
+		field.setStyle(quest_style);
 		field.setReadOnly(true);
 		test.listenForEntity(text1);
 		field = form.addTextField(text2);
-		field.setStyle(word_style);
+		field.setStyle(answer_style);
+		answer_style.setColor(normal_color);
 		test.listenForEntity(text2);
 		form.setButtonVisible(false);
 		info = body.addTextInfo("");
@@ -134,6 +152,7 @@ public class TrainPage extends ApplicationPage {
 	 */
 	private void nextWord() {
 		question.set(test.get().next());
+		answer_style.setColor(normal_color);
 
 		// process the end
 		if(question.get() == null) {
@@ -162,10 +181,16 @@ public class TrainPage extends ApplicationPage {
 		if(answer == null) {
 			sbar.set(app.t("Well done!"));
 			success.set(test.get().getSucceededNumber());
+			answer_style.setColor(succeeded_color);
+			if(success_sound != null)
+				success_sound.play();
 			nextWord();
 		}
 		else {
 			info.setText(answer);
+			answer_style.setColor(failed_color);
+			if(error_sound != null)
+				error_sound.play();
 			OS.os.getUI().start(wait_task);
 		}
 	}

@@ -19,7 +19,7 @@ import elf.ui.meta.LateLoader;
  */
 public class Main extends elf.app.Application {
 	public static final String APP_NAME = "Elastik";
-	public static final Version APP_VERSION = new Version(1, 2, 0);
+	public static final Version APP_VERSION = new Version(1, 3, 0);
 	private static final Hashtable<String, String> lang_names = new Hashtable<String, String>();
 	private static final Hashtable<String, Icon> lang_icons = new Hashtable<String, Icon>();
 	Configuration config = new Configuration(this);

@@ -1,9 +1,13 @@
 package elf.elastik;
 
+import java.io.IOException;
+
 import elf.elastik.test.Test;
+import elf.os.OS;
 import elf.ui.ActionBar;
 import elf.ui.Box;
 import elf.ui.Component;
+import elf.ui.Sound;
 import elf.ui.TextArea;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
@@ -25,10 +29,17 @@ public class CompletionPage extends ApplicationPage {
 		@Override public String getLabel() { return app.t("Stop"); }
 		@Override public String getHelp() { return app.t("Stop the test and go back to test configuration page."); }
 	};
+	
+	private Sound perfect_sound;
 
 	public CompletionPage(Window window, Var<Test> test) {
 		super(window);
 		this. test = test;
+		try {
+			perfect_sound = OS.os.getUI().getSound(Main.class.getResource("/sox/perfect.aiff"));
+		} catch (IOException e) {
+			// TODO log it somewhere
+		}
 	}
 
 	@Override
@@ -49,7 +60,9 @@ public class CompletionPage extends ApplicationPage {
 	@Override
 	public void onShow() {
 		super.onShow();
-
+		if(perfect_sound != null)
+			perfect_sound.play();
+		
 		// compute stats
 		int words = test.get().getQuestionNumber();
 		int good = test.get().getSucceededNumber();
@@ -94,6 +107,13 @@ public class CompletionPage extends ApplicationPage {
 		buf.append((float)test.get().getDuration() / 1000 + "s");
 		buf.append("</td></tr></table>");
 		area.display(buf.toString());
+	}
+
+	@Override
+	public void onHide() {
+		super.onHide();
+		if(perfect_sound != null)
+			perfect_sound.stop();
 	}
 
 }
