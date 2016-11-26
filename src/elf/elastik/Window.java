@@ -103,7 +103,7 @@ class Window {
 	 * Back to the previous page.
 	 */
 	public void doBack() {
-		page_pane.pop();
+		page_pane.back();
 	}
 	
 	/**

@@ -60,8 +60,6 @@ public class CompletionPage extends ApplicationPage {
 	@Override
 	public void onShow() {
 		super.onShow();
-		if(perfect_sound != null)
-			perfect_sound.play();
 		
 		// compute stats
 		int words = test.get().getQuestionNumber();
@@ -69,6 +67,10 @@ public class CompletionPage extends ApplicationPage {
 		int retry = test.get().getTryCount() - words;
 		int good_percent = good * 100 / test.get().getTryCount();
 		int retry_percent = retry * 100 / words;
+
+		// play perfect sound if required
+		if(good_percent == 100 && perfect_sound != null)
+			perfect_sound.play();
 
 		// display title
 		area.clear();

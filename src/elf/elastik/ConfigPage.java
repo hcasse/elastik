@@ -40,9 +40,9 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 	private CollectionVar<Theme> subset = new CollectionVar<Theme>();
 	private final Var<Test> test;
 
-	private final Action learn = new Action() {
+	private final Action train = new Action() {
 		@Override public void run() { doTrain(); }
-		@Override public String getLabel() { return app.t("Learn"); }
+		@Override public String getLabel() { return app.t("Train"); }
 		@Override public String getHelp() { return app.t("Start a learning session."); }
 		@Override public boolean isEnabled() {
 			boolean enabled = false;
@@ -92,7 +92,7 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 		Box hbody = body.addBox(Component.HORIZONTAL);
 		hbody.setAlign(Component.TOP);
 		Form form = hbody.addForm();
-		form.addAction(learn);
+		form.addAction(train);
 		form.setStyle(Form.STYLE_TWO_COLUMN);
 		form.addEnumField(type);
 		form.addCheckBox(repeat);
@@ -104,9 +104,9 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 			}
 		});
 		sset.setSubset(subset);
-		learn.add(subset);
+		train.add(subset);
 		ActionBar bar = body.addActionBar();
-		bar.add(learn);
+		bar.add(train);
 		bar.setAlignment(Component.RIGHT);
 		current_language.addChangeListener(this);
 	}

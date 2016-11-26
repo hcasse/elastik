@@ -156,6 +156,7 @@ public class TrainPage extends ApplicationPage {
 
 		// process the end
 		if(question.get() == null) {
+			question.set(Question.NULL);
 			text1.set("");
 			sbar.setDelay(StatusBar.FOREVER);
 			sbar.set(app.t("Training completed!"));

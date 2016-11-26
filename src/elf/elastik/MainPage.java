@@ -36,7 +36,7 @@ public class MainPage extends ApplicationPage {
 	};
 
 	Action learn = new Action() {
-		@Override public String getLabel() { return app.t("Learn"); }
+		@Override public String getLabel() { return app.t("Train"); }
 		@Override public void run() { window.doLearn(); }
 		@Override public boolean isEnabled() { return lang.get() != null && !lang.get().get().isEmpty(); }
 	};
