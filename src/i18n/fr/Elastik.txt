@@ -44,3 +44,11 @@ Well\ done!=Bravo
 words=nombre de mots
 Question\ foreign,\ answer\ native=Question en langue étrangère, réponse en langue native
 Question\ native,\ answer\ foreign=Question en langue native, réponse en langue étrangère
+Create\ a\ new\ theme.=Créer un nouveau thème.
+Remove\ the\ selected\ theme.=Supprimer le thème sélectionné.
+Remove\ the\ selected\ words\ from\ the\ theme.=Supprimer les mots sélectionnés.
+Copy=Copier
+Copy\ the\ selected\ words\ to\ another\ theme.=Copier les mots sélectionnés dans un autre thème.
+Select\ the\ theme\ to\ copy\ words\ to.=Sélectionnez le thème vers où copier.
+Word\ Copy=Copie de mot
+

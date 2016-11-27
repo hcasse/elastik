@@ -111,4 +111,10 @@ public class Theme implements Iterable<Word> {
 	public Iterator<Word> iterator() {
 		return words.iterator();
 	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+	
 }

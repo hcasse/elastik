@@ -1,5 +1,6 @@
 package elf.elastik;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -41,7 +42,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	private boolean updated = false;
 	private final Var<LanguageModel> current_language;
 	private final Var<Theme> current_theme = new Var<Theme>();
-	private final Var<Word> current_word = new Var<Word>();
+	private final CollectionVar<Word> current_words = new CollectionVar<Word>();
 	private final CollectionVar<Theme> themes = new CollectionVar<Theme>(new Vector<Theme>());
 	private final CollectionVar<Word> words = new CollectionVar<Word>(new Vector<Word>());
 	private CreationDialog dialog;
@@ -111,6 +112,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			@Override public String getLabel() { return "Add"; }
 			@Override public void run() { addTheme(); }
 			@Override public Icon getIcon() { return Main.getIcon("list_add"); }
+			@Override public String getHelp() { return app.t("Create a new theme."); }
 		};
 		ta.add(add_theme);
 		Action remove_theme =  window.getView().makeValidatedAction(new Action() {
@@ -121,6 +123,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 				return current_theme.get() != null
 					&& !EditPage.this.current_language.get().get().isAll(current_theme.get());
 			}
+			@Override public String getHelp() { return app.t("Remove the selected theme."); }
 		}, new Label(app.t("Do you want to remove this theme?")));
 		remove_theme.add(current_theme);
 		ta.add(remove_theme);
@@ -128,7 +131,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 		// make word list
 		Container wc = spane.getSecond();
 		List<Word> word_list = wc.addList(words);
-		word_list.setSelector(current_word);
+		word_list.setSelector(current_words);
 		word_list.setDisplayer(new AbstractDisplayer<Word>() {
 			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }
 		});
@@ -147,17 +150,28 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			@Override public void run() { EditPage.this.window.doAdd();  }
 			@Override public Icon getIcon() { return Main.getIcon("list_add"); }
 			@Override public boolean isEnabled() { return current_theme.get() != null; }
+			@Override public String getHelp() { return app.t("Add a new word to the theme."); }
 		};
 		add_word.add(current_theme);
 		wa.add(add_word);
 		Action remove_word =  new Action() {
 			@Override public String getLabel() { return "Remove"; }
-			@Override public void run() { words.remove(current_word.get()); EditPage.this.current_language.get().get().modify();  }
+			@Override public void run() { words.remove(current_words.getCollection()); EditPage.this.current_language.get().get().modify();  }
 			@Override public Icon getIcon() { return Main.getIcon("list_remove"); }
-			@Override public boolean isEnabled() { return current_word.get() != null; }
+			@Override public boolean isEnabled() { return !current_words.isEmpty(); }
+			@Override public String getHelp() { return app.t("Remove the selected words from the theme."); }
 		};
-		remove_word.add(word_list.getSelector());
+		remove_word.add(word_list.getMultiSelector());
 		wa.add(remove_word);
+		Action copy_word =  new Action() {
+			@Override public String getLabel() { return "Copy"; }
+			@Override public void run() { moveWords(current_words.getCollection()); }
+			@Override public Icon getIcon() { return Main.getIcon("copy"); }
+			@Override public boolean isEnabled() { return !current_words.isEmpty() && current_language.get().get().getThemes().size() > 2; }
+			@Override public String getHelp() { return app.t("Copy the selected words to another theme."); }
+		};
+		copy_word.add(word_list.getMultiSelector());
+		wa.add(copy_word);
 	}
 
 	/**
@@ -167,6 +181,22 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 		if(dialog == null)
 			dialog = new CreationDialog();
 		dialog.run();
+	}
+	
+	/**
+	 * Ask the user to select the target theme and move words
+	 * to the target theme.
+	 * @param words		Words to move.
+	 */
+	private void moveWords(Collection<Word> words) {
+		Vector<Theme> themes = new Vector<Theme>();
+		for(Theme theme: this.themes.getCollection())
+			if(theme != current_theme.get() && theme != current_language.get().get().getAll())
+				themes.add(theme);
+		Theme theme = window.getView().makeSelectionDialog(app.t("Select the theme to copy words to."), app.t("Word Copy"), themes).show();
+		if(theme != null)
+			for(Word word: current_words.getCollection())
+				theme.add(word);
 	}
 
 	/**
