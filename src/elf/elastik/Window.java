@@ -1,3 +1,20 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
 import elf.elastik.test.Test;
@@ -11,6 +28,7 @@ import elf.ui.TitleBar;
 import elf.ui.View;
 import elf.ui.meta.Action;
 import elf.ui.meta.Var;
+import elf.util.Duration;
 
 /**
  * Main window.
@@ -25,12 +43,9 @@ class Window {
 	private final PagePane page_pane;
 	private final MainPage main_page;
 	private final EditPage edit_page;
-	private final WordPage word_page;
 	private final ConfigPage config_page;
-	private final TrainPage train_page;
 	private final CompletionPage comp_page;
-	private final Var<Test> current_test = new Var<Test>();
-	
+
 	public Window(Main app) {
 		this.app = app;
 
@@ -48,10 +63,8 @@ class Window {
 		// build the pages
 		main_page = new MainPage(this, current_language);
 		edit_page = new EditPage(this, current_language);
-		word_page = new WordPage(this, current_language, edit_page.getCurrentTheme(), edit_page.getWords());
-		config_page = new ConfigPage(this, current_language, current_test);
-		train_page = new TrainPage(this, current_language, current_test);
-		comp_page = new CompletionPage(this, current_test);
+		config_page = new ConfigPage(this, current_language /*, current_test*/);
+		comp_page = new CompletionPage(this);
 
 		// open all
 		tbar.setTitle(main_page.getTitle());
@@ -114,13 +127,6 @@ class Window {
 	}
 	
 	/**
-	 * Perform addition of a word.
-	 */
-	public void doAdd() {
-		add(word_page);
-	}
-	
-	/**
 	 * Perform learning.
 	 */
 	public void doLearn() {
@@ -128,16 +134,10 @@ class Window {
 	}
 	
 	/**
-	 * Launch training session.
-	 */
-	public void doTrain() {
-		add(train_page);
-	}
-	
-	/**
 	 * Display completion page.
 	 */
-	public void doCompletion() {
+	public void doCompletion(Test test, Duration duration) {
+		comp_page.set(test, duration);
 		set(comp_page);
 	}
 	
@@ -145,7 +145,7 @@ class Window {
 	 * Make the given page active.
 	 * @param page	Page to make active.
 	 */
-	private void add(ApplicationPage page) {
+	public void add(ApplicationPage page) {
 		page_pane.push(page.getPage());
 	}
 	
@@ -156,5 +156,5 @@ class Window {
 	private void set(ApplicationPage page) {
 		page_pane.set(page.getPage());
 	}
-	
+
 }

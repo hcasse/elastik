@@ -1,8 +1,27 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik.data;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -11,16 +30,51 @@ import elf.os.OS;
 import elf.store.Storage;
 import elf.store.StructuredStore;
 import elf.store.XMLStructuredStore;
+import elf.ui.I18N;
 
 /**
  * Represent a language to learn. 
  * @author casse
  */
 public class Language {
+	private static I18N english;
+	private static final HashMap<String, Eval> map = new HashMap<String, Eval>();
+	private static final Eval NULL_EVAL = new Eval() {
+		@Override public String eval(String key, I18N i18n, Language lang)
+			{ return ""; }
+	};
 	private String nat, name;
-	private final Theme all;
 	private LinkedList<Theme> themes = new LinkedList<Theme>();
+	private HashMap<Model, Theme> alls = new HashMap<Model, Theme>();
 	private boolean loaded = false, modified = false;
+	private I18N for_i18n;
+
+	static {
+		map.put("@native@", new Eval() {
+			@Override public String eval(String key, I18N i18n, Language lang)
+				{ return i18n.t("@" + lang.nat + "@"); }
+		});
+		map.put("@foreign@", new Eval() {
+			@Override public String eval(String key, I18N i18n, Language lang)
+				{
+					String r = i18n.look("@" + lang.name + "@");
+					if(r != null)
+						return r;
+					else
+						return i18n.t("foreign");
+				}
+		});
+		Eval to_foreign = new Eval() {
+			@Override public String eval(String key, I18N i18n, Language lang)
+				{ return lang.getForeignI18N().t("@" + key); }
+		};
+		map.put("@1@", to_foreign);
+		map.put("@2@", to_foreign);
+		map.put("@3@", to_foreign);
+		map.put("@1s@", to_foreign);
+		map.put("@2s@", to_foreign);
+		map.put("@3s@", to_foreign);
+	}
 	
 	/**
 	 * Build a language.
@@ -31,8 +85,6 @@ public class Language {
 	 * @param all_name	Native name for all.
 	 */
 	public Language(String nat, String lang, boolean is_new, String all_name) {
-		all = new Theme(this, all_name);
-		add(all);
 		this.nat = nat;
 		this.name = lang;
 		loaded = is_new;
@@ -44,7 +96,22 @@ public class Language {
 	 * @return
 	 */
 	public Theme getAll() {
-		return all;
+		return getAll(Model.SINGLE_WORD);
+	}
+	
+	/**
+	 * Get the "all" theme for a model.
+	 * @param model		Model to get the "all" theme for.
+	 * @return			"all" theme for model.
+	 */
+	public Theme getAll(Model model) {
+		Theme theme = alls.get(model);
+		if(theme == null) {
+			theme = new Theme(this, "all (" + model.getName() + ")", model);
+			alls.put(model, theme);
+			add(theme);
+		}
+		return theme;
 	}
 	
 	/**
@@ -53,7 +120,7 @@ public class Language {
 	 * @return			True if it is all, false else.
 	 */
 	public boolean isAll(Theme theme) {
-		return all == theme;
+		return alls.containsValue(theme);
 	}
 	
 	/**
@@ -102,25 +169,20 @@ public class Language {
 		save.putField("name");
 		save.put(name);
 		
-		// save words
-		save.putField("words");
+		// save questions
+		save.putField("questions");
 		save.putList();
-		for(Word word: all.getWords()) {
-			save.putStruct();
-			word.save(save);
-			save.end();
-		}
+		for(Theme theme: alls.values())
+			for(Question quest: theme.getQuestions())
+				quest.save(save);
 		save.end();
 		
 		// save themes
 		save.putField("themes");
 		save.putList();
 		for(Theme theme: themes)
-			if(theme != all) {
-				save.putStruct();
+			if(!isAll(theme))
 				theme.save(save);
-				save.end();
-			}
 		save.end();
 		
 		// closing
@@ -142,19 +204,29 @@ public class Language {
 			nat = (String)load.get(String.class);
 		if(load.getField("name"))
 			name = (String)load.get(String.class);
-		System.out.println("=== " + nat + "-" + name + "===");
 		
-		// load words
-		TreeMap<UUID, Word> map = new TreeMap<UUID, Word>();
+		// load the questions (if any)
+		TreeMap<UUID, Question> qmap = new TreeMap<UUID, Question>(); 
+		if(load.getField("questions")) {
+			int n = load.getList();
+			for(int i = 0; i < n; i++) {
+				Question quest = Question.load(load, qmap);
+				qmap.put(quest.getUUID(), quest);
+				getAll(quest.getModel()).add(quest);
+			}
+			load.end();
+		}
+		
+		// compatibility load
 		if(load.getField("words")) {
 			int n = load.getList();
 			for(int i = 0; i < n; i++) {
 				load.getStruct();
 				Word word = new Word(load);
-				all.add(word);
-				map.put(word.getID(), word);
 				load.end();
-				System.out.println("- " + word.getNative() + " / " + word.getForeign());
+				Question quest = new Question(word.getID(), Model.SINGLE_WORD, word.getNative(), word.getForeign());
+				qmap.put(word.getID(), quest);
+				getAll(quest.getModel()).add(quest);
 			}
 			load.end();
 		}
@@ -162,11 +234,8 @@ public class Language {
 		// load themes
 		if(load.getField("themes")) {
 			int n = load.getList();
-			for(int i = 0; i < n; i++) {
-				load.getStruct();
-				new Theme(this, load, map);
-				load.end();
-			}
+			for(int i = 0; i < n; i++)
+				Theme.load(this, load, qmap);
 			load.end();
 		}
 		
@@ -181,7 +250,10 @@ public class Language {
 	 * @return	True if empty, false else.
 	 */
 	public boolean isEmpty() {
-		return all.getWords().isEmpty();
+		for(Theme theme: alls.values())
+			if(!theme.isEmpty())
+				return false;
+		return true;
 	}
 	
 	/**
@@ -205,7 +277,7 @@ public class Language {
 	 * @return	Word list.
 	 */
 	public Iterable<Word> getWords() {
-		return all.getWords();
+		return null;
 	}
 	
 	/**
@@ -213,7 +285,7 @@ public class Language {
 	 * @param word	Word to add.
 	 */
 	public void add(Word word) {
-		all.add(word);
+		// all.add(word);
 	}
 	
 	/**
@@ -221,7 +293,7 @@ public class Language {
 	 * @param word	Removed word.
 	 */
 	public void remove(Word word) {
-		all.remove(word);
+		// all.remove(word);
 	}
 	
 	/**
@@ -249,4 +321,57 @@ public class Language {
 	public Collection<Theme> getThemes() {
 		return themes;
 	}
+	
+	/**
+	 * Get the internationalization for the foreign language.
+	 * @return	Foreign language internationalization.
+	 */
+	public I18N getForeignI18N() {
+		if(for_i18n == null)
+			for_i18n = new I18N("Elastik", Locale.forLanguageTag(name));
+		return for_i18n;
+	}
+	
+	/**
+	 * Translate a string into the current language supporting
+	 * symbols between @...@.
+	 * @param text	Text to translate.
+	 * @param lang	UI locale.
+	 * @return		Translated text.
+	 */
+	public String t(String text, I18N i18n) {
+		
+		// try to translate, else use english language
+		String t = i18n.look(text);
+		if(t == null) {
+			if(english == null)
+				english = new I18N(Main.APP_NAME, Locale.forLanguageTag("en"));
+			i18n = english;
+		}
+		else
+			text = t;
+		
+		// evaluate the symbols
+		int i = text.indexOf('@');
+		while(i >= 0) {
+			int j = text.indexOf('@', i + 1);
+			if(j < 0)
+				break;
+			String id = text.substring(i, j + 1);
+			Eval eval = map.get(id);
+			if(eval == null)
+				eval = NULL_EVAL;
+			String val = eval.eval(id, i18n, this);
+			text = text.substring(0, i) + val + text.substring(j + 1);
+			i = text.indexOf('@', i + val.length() + 1);
+		}
+		return text;
+	}
+
+	private static interface Eval {
+		
+		String eval(String key, I18N i18n, Language lang);
+		
+	}
+	
 }

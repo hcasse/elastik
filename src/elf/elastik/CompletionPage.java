@@ -1,3 +1,20 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
 import java.io.IOException;
@@ -10,36 +27,45 @@ import elf.ui.Component;
 import elf.ui.Sound;
 import elf.ui.TextArea;
 import elf.ui.meta.Action;
-import elf.ui.meta.Var;
+import elf.util.Duration;
 
 /**
  * Page displaying completion result after a training.
  * @author casse
  */
 public class CompletionPage extends ApplicationPage {
-	private final Var<Test> test;
+	private Test test;
+	private Duration duration;
 	private TextArea area;
 	private Action redo = new Action() {
-		@Override public void run() { test.get().reset(); window.doTrain(); }
+		@Override public void run() { TrainPage.run(window, test); }
 		@Override public String getLabel() { return app.t("Redo"); }
 		@Override public String getHelp() { return app.t("Do the test once more."); }
 	};
 	private Action stop = new Action() {
-		@Override public void run() { window.doBack(); }
+		@Override public void run() { test.reset(); window.doBack(); }
 		@Override public String getLabel() { return app.t("Stop"); }
 		@Override public String getHelp() { return app.t("Stop the test and go back to test configuration page."); }
 	};
 	
 	private Sound perfect_sound;
 
-	public CompletionPage(Window window, Var<Test> test) {
+	public CompletionPage(Window window) {
 		super(window);
-		this. test = test;
 		try {
 			perfect_sound = OS.os.getUI().getSound(Main.class.getResource("/sox/perfect.aiff"));
 		} catch (IOException e) {
 			// TODO log it somewhere
 		}
+	}
+	
+	/**
+	 * Set the information for complation.
+	 * @param test		Test to complete.
+	 */
+	public void set(Test test, Duration duration) {
+		this.test = test;
+		this.duration = duration;
 	}
 
 	@Override
@@ -62,10 +88,10 @@ public class CompletionPage extends ApplicationPage {
 		super.onShow();
 		
 		// compute stats
-		int words = test.get().getQuestionNumber();
-		int good = test.get().getSucceededNumber();
-		int retry = test.get().getTryCount() - words;
-		int good_percent = good * 100 / test.get().getTryCount();
+		int words = test.getQuestionNumber();
+		int good = test.getSucceededNumber().get();
+		int retry = test.getTryCount();
+		int good_percent = good * 100 / test.getTryCount();
 		int retry_percent = retry * 100 / words;
 
 		// play perfect sound if required
@@ -106,7 +132,7 @@ public class CompletionPage extends ApplicationPage {
 		buf.append("</td></tr><tr><td align=\"right\"><b>");
 		buf.append(app.t("time"));
 		buf.append("</b></td><td>");
-		buf.append((float)test.get().getDuration() / 1000 + "s");
+		buf.append((float)duration.getSeconds() / 1000 + "s");
 		buf.append("</td></tr></table>");
 		area.display(buf.toString());
 	}

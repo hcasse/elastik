@@ -15,12 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik.test;
+package elf.elastik.test.old;
 
-import elf.elastik.LanguageModel;
-import elf.elastik.data.Model;
 import elf.ui.Icon;
-import elf.ui.meta.Var;
 
 /**
  * Interface describing a test.
@@ -28,8 +25,6 @@ import elf.ui.meta.Var;
  */
 public interface Test {
 
-	void configure(Var<Integer> succeeded, Var<Integer> done);
-	
 	/**
 	 * Get the label of the test.
 	 * @return	Test label.
@@ -41,33 +36,20 @@ public interface Test {
 	 * @return	Test icon.
 	 */
 	Icon getIcon();
-	
-	/**
-	 * Get the language model.
-	 * @return	Language model.
-	 */
-	LanguageModel getLanguage();
-	
-	/**
-	 * Get the model of the questions.
-	 * @return	Question model.
-	 */
-	Model getModel();
 
 	/**
 	 * Get the next question.
-	 * @param values	Array to store the displayed values of the questions. Null fields represents values to answer.
-	 * @return			True if there it remains questions, false else (values not written).
+	 * @return		Next question.
 	 */
-	boolean next(String[] values);
+	Question next();
 
 	/**
-	 * Check if the answers are the right ones. 
-	 * @param values	Fixed values (one for each model field, good answers are set to null).
-	 * @return			True for success, false else.
+	 * Check for an answer.
+	 * @param answer	Checked answer.
+	 * @return			Null for success, error message else.
 	 */
-	boolean check(String[] values);
-	
+	String check(String answer);
+
 	/**
 	 * Get the number of questions.
 	 * @return		Question number.
@@ -78,13 +60,13 @@ public interface Test {
 	 * Get the number of succeeded questions.
 	 * @return		Succeeded question number.
 	 */
-	Var<Integer> getSucceededNumber();
+	int getSucceededNumber();
 
 	/**
 	 * Get the number of done questions.
 	 * @return	Done question number.
 	 */
-	Var<Integer> getDoneNumber();
+	int getDoneNumber();
 
 	/**
 	 * Get the count of tried questions.
@@ -97,4 +79,9 @@ public interface Test {
 	 */
 	void reset();
 
+	/**
+	 * Get the last test duration.
+	 * @return	Test duration (in ms).
+	 */
+	public long getDuration();
 }

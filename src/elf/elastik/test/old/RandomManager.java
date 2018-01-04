@@ -15,46 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik;
+package elf.elastik.test.old;
 
-import java.util.Locale;
-import java.util.Vector;
-
-import elf.app.AutoConfiguration;
+import java.util.Random;
 
 /**
- * Configuration of the application.
+ * Random selector of questions.
  * @author casse
  */
-public class Configuration extends AutoConfiguration {
+public class RandomManager implements Manager {
+	private Random random = new Random();
+	private Question last;
 
-	public String fname = "", lname = "", nat;
-	public Vector<String> langs = new Vector<String>();
-	public boolean repeat = false;
-
-	public Configuration(Main main) {
-		super(main, "config");
-		nat = Locale.getDefault().getLanguage();
+	@Override
+	public Question next(BasicTest test) {
+		int i = random.nextInt(test.getQuestionNumber() - test.getDoneNumber());
+		last = test.get(i);
+		return last;
 	}
 
-	public void addLanguage(String lang) {
-		langs.add(lang);
-		modify();
+	@Override
+	public String check(BasicTest test, String answer) {
+		String r = last.check(answer);
+		if(r == null)
+			test.succeeded(last);
+		else
+			test.failed(last);
+		return r;
 	}
 
-
-	public void removeLanguage(String lang) {
-		langs.remove(lang);
-		modify();
-	}
-
-	public boolean getRepeat() {
-		return repeat;
-	}
-
-	public void setRepeat(boolean repeat) {
-		this.repeat = repeat;
-		modify();
+	@Override
+	public void reset() {
 	}
 
 }

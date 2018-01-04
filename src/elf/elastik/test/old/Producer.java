@@ -15,46 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik;
-
-import java.util.Locale;
-import java.util.Vector;
-
-import elf.app.AutoConfiguration;
+package elf.elastik.test.old;
 
 /**
- * Configuration of the application.
+ * Interface implemented by objects producing questions.
+ * Mainly an iterable on questions.
  * @author casse
  */
-public class Configuration extends AutoConfiguration {
-
-	public String fname = "", lname = "", nat;
-	public Vector<String> langs = new Vector<String>();
-	public boolean repeat = false;
-
-	public Configuration(Main main) {
-		super(main, "config");
-		nat = Locale.getDefault().getLanguage();
-	}
-
-	public void addLanguage(String lang) {
-		langs.add(lang);
-		modify();
-	}
-
-
-	public void removeLanguage(String lang) {
-		langs.remove(lang);
-		modify();
-	}
-
-	public boolean getRepeat() {
-		return repeat;
-	}
-
-	public void setRepeat(boolean repeat) {
-		this.repeat = repeat;
-		modify();
-	}
+public interface Producer extends Iterable<Question> {
 
 }

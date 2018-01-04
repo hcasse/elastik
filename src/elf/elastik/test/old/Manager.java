@@ -15,46 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik;
-
-import java.util.Locale;
-import java.util.Vector;
-
-import elf.app.AutoConfiguration;
+package elf.elastik.test.old;
 
 /**
- * Configuration of the application.
+ * A test manager used by AbstractTest to manage the test.
  * @author casse
  */
-public class Configuration extends AutoConfiguration {
+public interface Manager {
 
-	public String fname = "", lname = "", nat;
-	public Vector<String> langs = new Vector<String>();
-	public boolean repeat = false;
+	/**
+	 * Reset the manager.
+	 */
+	void reset();
 
-	public Configuration(Main main) {
-		super(main, "config");
-		nat = Locale.getDefault().getLanguage();
-	}
+	/**
+	 * Get the next question.
+	 * @param test	Current test.
+	 * @return		Next question or null.
+	 */
+	Question next(BasicTest test);
 
-	public void addLanguage(String lang) {
-		langs.add(lang);
-		modify();
-	}
-
-
-	public void removeLanguage(String lang) {
-		langs.remove(lang);
-		modify();
-	}
-
-	public boolean getRepeat() {
-		return repeat;
-	}
-
-	public void setRepeat(boolean repeat) {
-		this.repeat = repeat;
-		modify();
-	}
-
+	/**
+	 * Check for an answer.
+	 * @param test		Current test.
+	 * @param answer	Proposed answer.
+	 */
+	String check(BasicTest test, String answer);
 }

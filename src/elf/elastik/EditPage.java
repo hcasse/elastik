@@ -1,17 +1,37 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Vector;
 
+import elf.elastik.data.Model;
+import elf.elastik.data.Question;
 import elf.elastik.data.Theme;
-import elf.elastik.data.Word;
 import elf.ui.Dialog;
+import elf.ui.Displayer;
 import elf.ui.ErrorManager;
 import elf.ui.Form;
 import elf.ui.Icon;
 import elf.ui.ActionBar;
 import elf.ui.Button;
+import elf.ui.ChoiceField;
 import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.AbstractDisplayer;
@@ -42,9 +62,9 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	private boolean updated = false;
 	private final Var<LanguageModel> current_language;
 	private final Var<Theme> current_theme = new Var<Theme>();
-	private final CollectionVar<Word> current_words = new CollectionVar<Word>();
+	private final CollectionVar<Question> current_words = new CollectionVar<Question>();
 	private final CollectionVar<Theme> themes = new CollectionVar<Theme>(new Vector<Theme>());
-	private final CollectionVar<Word> words = new CollectionVar<Word>(new Vector<Word>());
+	private final CollectionVar<Question> words = new CollectionVar<Question>(new Vector<Question>());
 	private CreationDialog dialog;
 
 	/**
@@ -54,7 +74,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	public EditPage(Window window, Var<LanguageModel> current_language) {
 		super(window);
 		this.current_language = current_language;
-		current_language.addChangeListener(this);
+		current_language.add(this);
 	}
 
 	/**
@@ -66,7 +86,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	}
 
 	@Override
-	public void change(Var<LanguageModel> data) {
+	public void onChange(Var<LanguageModel> data) {
 		updated = true;
 	}
 
@@ -89,7 +109,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	 * Get the variable of words.
 	 * @return
 	 */
-	public CollectionVar<Word> getWords() {
+	public CollectionVar<Question> getWords() {
 		return words;
 	}
 
@@ -130,24 +150,21 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 
 		// make word list
 		Container wc = spane.getSecond();
-		List<Word> word_list = wc.addList(words);
+		List<Question> word_list = wc.addList(words);
 		word_list.setSelector(current_words);
-		word_list.setDisplayer(new AbstractDisplayer<Word>() {
-			@Override public String asString(Word value) { return value.getForeign() + " / " + value.getNative(); }
-		});
-		current_theme.addChangeListener(new ChangeListener<Theme>() {
-			@Override public void change(Var<Theme> data) {
+		current_theme.add(new ChangeListener<Theme>() {
+			@Override public void onChange(Var<Theme> data) {
 				if(data.get() == null)
-					words.setCollection(new Vector<Word>());
+					words.setCollection(new Vector<Question>());
 				else
-					words.setCollection(current_theme.get().getWords());
+					words.setCollection(current_theme.get().getQuestions());
 			}
 		});
 		ActionBar wa = wc.addActionBar();
 		wa.setStyle(Button.STYLE_ICON);
 		Action add_word = new Action() {
 			@Override public String getLabel() { return "Add"; }
-			@Override public void run() { EditPage.this.window.doAdd();  }
+			@Override public void run() { window.add(QuestionPage.get(window, current_language, current_theme, words)); }
 			@Override public Icon getIcon() { return Main.getIcon("list_add"); }
 			@Override public boolean isEnabled() { return current_theme.get() != null; }
 			@Override public String getHelp() { return app.t("Add a new word to the theme."); }
@@ -188,23 +205,24 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 	 * to the target theme.
 	 * @param words		Words to move.
 	 */
-	private void moveWords(Collection<Word> words) {
+	private void moveWords(Collection<Question> words) {
 		Vector<Theme> themes = new Vector<Theme>();
 		for(Theme theme: this.themes.getCollection())
 			if(theme != current_theme.get() && theme != current_language.get().get().getAll())
 				themes.add(theme);
 		Theme theme = window.getView().makeSelectionDialog(app.t("Select the theme to copy words to."), app.t("Word Copy"), themes).show();
 		if(theme != null)
-			for(Word word: current_words.getCollection())
+			for(Question word: current_words.getCollection())
 				theme.add(word);
 	}
 
 	/**
 	 * Create a theme with the given name.
 	 * @param name	Theme name.
+	 * @param model	Theme model.
 	 */
-	private void createTheme(String name) {
-		this.themes.add(new Theme(current_language.get().get(), name));
+	private void createTheme(String name, Model model) {
+		this.themes.add(new Theme(current_language.get().get(), name, model));
 		current_language.get().get().modify();
 	}
 
@@ -213,12 +231,20 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 		Var<String> name = new Var<String>("") {
 			@Override public String getLabel() { return app.t("name"); }
 		};
+		Var<Model> model = new Var<Model>(Model.SINGLE_WORD) {
+			@Override public String getLabel() { return app.t("model"); }			
+		};
 
 		public CreationDialog() {
 			dialog = window.getView().makeDialog(this);
 			ErrorManager eman = dialog.addErrorManager();
 			Form form = eman.addForm();
 			form.addTextField(name);
+			ChoiceField<Model> choice = form.addChoiceField(model, new CollectionVar<Model>(Model.getModels()));
+			choice.setDisplayer(new Displayer<Model>() {
+				@Override public String asString(Model value) { return app.t(value.getName()); }
+				@Override public Icon getIcon(Model value) { return null; }
+			});
 			form.setEnterMode(Form.ENTER_NEXT_AND_SUBMIT);
 			form.setButtonVisible(false);
 			Check check1 = new Check(form, "Theme already exists!", Check.var(name)) {
@@ -234,7 +260,7 @@ public class EditPage extends ApplicationPage implements ChangeListener<Language
 			};
 			dialog.addCancel();
 			CheckedAction action = new CheckedAction() {
-				@Override public void run() { createTheme(name.get()); }
+				@Override public void run() { createTheme(name.get(), model.get()); }
 				@Override public String getLabel() { return app.t("Create"); }
 				@Override public Icon getIcon() { return Main.getIcon("list_add"); }
 			};

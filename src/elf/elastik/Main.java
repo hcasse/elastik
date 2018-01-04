@@ -1,3 +1,20 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
 import java.io.IOException;
@@ -27,7 +44,7 @@ public class Main extends elf.app.Application {
 	I18N i18n;
 	static Icon.Manager iman = new Icon.Manager(Main.class.getResource("/pix/"));
 	private LanguageModel.Context context;
-
+	
 	public Main() {
 		super(APP_NAME, APP_VERSION);
 		i18n = new I18N(APP_NAME, new Locale[] { Locale.getDefault()});
@@ -146,26 +163,9 @@ public class Main extends elf.app.Application {
 			return icon;
 	}
 
-	@Override
-	public String getLicense() {
-		return "Copyright (c) 2015 - LGPL v3";
-	}
-
-	@Override
-	public String getSite() {
-		return "http://www.elastik.fr";
-	}
-
-	@Override
-	public String[] getAuthors() {
-		return new String[] {
-			"Hugues Cassé"
-		};
-	}
-
-	@Override
-	public Icon getLogo() {
-		return getIcon("logo");
-	}
+	@Override public String getLicense() { return "Copyright (c) 2015 - LGPL v3"; }
+	@Override public String getSite() { return "http://www.elastik.fr"; }
+	@Override public String[] getAuthors() { return new String[] { "Hugues Cassé" }; }
+	@Override public Icon getLogo() { return getIcon("logo"); }
 
 }

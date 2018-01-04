@@ -1,3 +1,20 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
 import java.util.Comparator;
@@ -33,22 +50,26 @@ public class MainPage extends ApplicationPage {
 	Action add = new Action() {
 		@Override public String getLabel() { return app.t("Add"); }
 		@Override public void run() { addLanguage(); }
+		@Override public Icon getIcon() { return Main.iman.get("add_lang"); }
 	};
 
 	Action learn = new Action() {
 		@Override public String getLabel() { return app.t("Train"); }
 		@Override public void run() { window.doLearn(); }
 		@Override public boolean isEnabled() { return lang.get() != null && !lang.get().get().isEmpty(); }
+		@Override public Icon getIcon() { return Main.iman.get("learn"); }
 	};
 
 	Action edit = new Action() {
 		@Override public String getLabel() { return app.t("Edit"); }
 		@Override public void run() { window.doEdit(); }
 		@Override public boolean isEnabled() { return lang.get() != null; }
+		@Override public Icon getIcon() { return Main.iman.get("edit_lang"); }
 	};
 
 	Action remove = window.getView().makeValidatedAction(
 		new Action() {
+			@Override public Icon getIcon() { return Main.iman.get("rem_lang"); }
 			@Override public String getLabel() { return app.t("Remove"); }
 			@Override public void run() { removeLanguage(); }
 			@Override public boolean isEnabled() { return lang != null && lang.get() != null; }
@@ -153,10 +174,4 @@ public class MainPage extends ApplicationPage {
 		abar.add(remove);
 	}
 
-	@Override
-	public void onShow() {
-		super.onShow();
-		lang.fireChange();
-	}
-	
 }

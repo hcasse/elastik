@@ -1,56 +1,58 @@
 /*
- * Elastik application
- * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
- *
+ * Elastik Application
+ * Copyright (c) 2016 - Hugues Cassé <hugues.casse@laposte.net>
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik;
+package elf.elastik.data;
 
 /**
- * Represents a simple user.
+ * Field of the model.
  * @author casse
  */
-public class User {
-	String fname, lname, lang;
+public class Field {
+	private String name;
+	private boolean key;
+	int index;
 	
-	public User(String fname, String lname, String lang) {
-		this.fname = fname;
-		this.lname = lname;
-		this.lang = lang;
+	/**
+	 * Build a field that is not a key.
+	 * @param name	Field name.
+	 */
+	public Field(String name) {
+		this.name = name;
 	}
 	
 	/**
-	 * Get the first name.
-	 * @return	First name.
+	 * Build a field and set if it is a key field.
+	 * @param name	Field name.
+	 * @param key	True for a key, false for not a key.
 	 */
-	public String getFirstName() {
-		return fname;
+	public Field(String name, boolean key) {
+		this.name = name;
+		this.key = key;
+	}
+
+	public String getName() {
+		return name;
 	}
 	
-	/**
-	 * Get the last name.
-	 * @return	Last name.
-	 */
-	public String getLastName() {
-		return lname;
+	public int getIndex() {
+		return index;
 	}
-	
-	/**
-	 * Get the native language of the user.
-	 * @return	Native language.
-	 */
-	public String getLanguage() {
-		return lang;
+
+	public boolean isKey() {
+		return key;
 	}
 }

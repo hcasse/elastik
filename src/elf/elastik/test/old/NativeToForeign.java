@@ -15,46 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package elf.elastik;
+package elf.elastik.test.old;
 
-import java.util.Locale;
-import java.util.Vector;
+import java.util.Collection;
 
-import elf.app.AutoConfiguration;
+import elf.elastik.data.Theme;
 
 /**
- * Configuration of the application.
+ * Vocabulary test asking with native word for matching foreign word.
  * @author casse
  */
-public class Configuration extends AutoConfiguration {
+public class NativeToForeign extends AbstractVocabulary {
+	private Collection<Theme> themes;
+	private String qlang, alang;
 
-	public String fname = "", lname = "", nat;
-	public Vector<String> langs = new Vector<String>();
-	public boolean repeat = false;
-
-	public Configuration(Main main) {
-		super(main, "config");
-		nat = Locale.getDefault().getLanguage();
+	public NativeToForeign(Collection<Theme> themes, String forn, String natv) {
+		this.themes = themes;
+		this.qlang = forn;
+		this.alang = natv;
 	}
 
-	public void addLanguage(String lang) {
-		langs.add(lang);
-		modify();
+	@Override
+	protected String getQuestionLanguage() {
+		return qlang;
 	}
 
-
-	public void removeLanguage(String lang) {
-		langs.remove(lang);
-		modify();
+	@Override
+	protected String getAnswerLanguage() {
+		return alang;
 	}
 
-	public boolean getRepeat() {
-		return repeat;
-	}
-
-	public void setRepeat(boolean repeat) {
-		this.repeat = repeat;
-		modify();
+	@Override
+	protected void make() {
+		for(Theme theme: themes)
+			for(elf.elastik.data.Word word: theme)
+				add(word.getNative(), word.getForeign());
 	}
 
 }

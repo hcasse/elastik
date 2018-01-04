@@ -1,13 +1,35 @@
+/*
+ * Elastik application
+ * Copyright (c) 2014 - Hugues Cassé <hugues.casse@laposte.net>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package elf.elastik;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
+import java.util.Vector;
 
-import elf.elastik.Configuration.TestType;
+import elf.elastik.data.Field;
+import elf.elastik.data.Model;
+import elf.elastik.data.Question;
 import elf.elastik.data.Theme;
-import elf.elastik.test.BasicTest;
-import elf.elastik.test.OneAnswerProducer;
-import elf.elastik.test.RandomManager;
-import elf.elastik.test.RepeatManager;
+import elf.elastik.test.Manager;
+import elf.elastik.test.Selector;
+import elf.elastik.test.SingleKeyTest;
 import elf.elastik.test.Test;
 import elf.ui.AbstractDisplayer;
 import elf.ui.ActionBar;
@@ -16,11 +38,10 @@ import elf.ui.Component;
 import elf.ui.Container;
 import elf.ui.Form;
 import elf.ui.SubsetField;
-import elf.ui.meta.Accessor;
 import elf.ui.meta.Action;
 import elf.ui.meta.CollectionVar;
-import elf.ui.meta.EnumVar;
 import elf.ui.meta.Var;
+import elf.ui.meta.Var.ChangeListener;
 
 /**
  * Configuration page for learn phase.
@@ -34,11 +55,20 @@ import elf.ui.meta.Var;
  *
  * @author casse
  */
-public class ConfigPage extends ApplicationPage implements Var.ChangeListener<LanguageModel> {
+public class ConfigPage extends ApplicationPage {
 	private Var<LanguageModel> current_language;
 	private CollectionVar<Theme> themes = new CollectionVar<Theme>();
 	private CollectionVar<Theme> subset = new CollectionVar<Theme>();
-	private final Var<Test> test;
+	private Var<TestMaker> choice = new Var<TestMaker>() {
+		@Override public String getLabel() { return app.t("Type"); }
+		@Override public String getHelp() { return app.t("Select the type of question"); }
+	};
+	private CollectionVar<TestMaker> choices = new CollectionVar<TestMaker>();
+	private final Var<Boolean> repeat =
+		new Var.Config<Boolean>(app.config, "repeat") {
+			@Override public String getLabel() { return app.t("Repeat"); }
+			@Override public String getHelp() { return app.t("Repeat once failed words."); }
+		};
 
 	private final Action train = new Action() {
 		@Override public void run() { doTrain(); }
@@ -47,37 +77,25 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 		@Override public boolean isEnabled() {
 			boolean enabled = false;
 			for(Theme theme: subset.getCollection())
-				if(!theme.getWords().isEmpty()) {
+				if(!theme.getQuestions().isEmpty()) {
 					enabled = true;
 					break;
 				}
 			return enabled;
 		}
 	};
+	
+	private final ChangeListener<LanguageModel> listener = new ChangeListener<LanguageModel>() {
+		@Override public void onChange(Var<LanguageModel> var)
+			{ ConfigPage.this.onChange(var); }
+	};
 
-	private final Var<Boolean> repeat;
-	private final EnumVar<TestType> type;
+	private Model model;
 
-	/**
-	 * Get the selected themes.
-	 * @return	Selected themes.
-	 */
-	public CollectionVar<Theme> getSelectedThemes() {
-		return subset;
-	}
-
-	public ConfigPage(Window window, Var<LanguageModel> current_language, Var<Test> test) {
+	public ConfigPage(Window window, Var<LanguageModel> current_language) {
 		super(window);
 		this.current_language = current_language;
-		this.test = test;
-		type = new EnumVar<TestType>(new Accessor.Config<TestType>(app.config, "type"), app.i18n) {
-			@Override public String getLabel() { return app.t("Exercise"); }
-			@Override public String getHelp() { return app.t("Find foreign word from native word and the reverse."); }
-		};
-		repeat = new Var.Config<Boolean>(app.config, "repeat") {
-			@Override public String getLabel() { return app.t("Repeat"); }
-			@Override public String getHelp() { return app.t("Repeat once failed words."); }
-		};
+		this.getPage().listenExtern(current_language, listener);
 	}
 
 	@Override
@@ -87,20 +105,20 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 
 	@Override
 	public void make() {
-		change(current_language);
 		Container body = page.addBox(Component.VERTICAL);
 		Box hbody = body.addBox(Component.HORIZONTAL);
 		hbody.setAlign(Component.TOP);
 		Form form = hbody.addForm();
 		form.addAction(train);
 		form.setStyle(Form.STYLE_TWO_COLUMN);
-		form.addEnumField(type);
+		form.addChoiceField(choice, choices);
 		form.addCheckBox(repeat);
 		form.setButtonVisible(false);
+
 		SubsetField<Theme> sset = hbody.addSubsetField(themes);
 		sset.setDisplayer(new AbstractDisplayer<Theme>() {
 			@Override public String asString(Theme theme) {
-				return String.format(app.t("%s (%d words)"), theme.getName(), theme.getWords().size());
+				return String.format(app.t("%s (%d questions)"), theme.getName(), theme.getQuestions().size());
 			}
 		});
 		sset.setSubset(subset);
@@ -108,12 +126,49 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 		ActionBar bar = body.addActionBar();
 		bar.add(train);
 		bar.setAlignment(Component.RIGHT);
-		current_language.addChangeListener(this);
+		
+		subset.addListener(new CollectionVar.Listener<Theme>() {
+			@Override public void onAdd(Theme item) { if(subset.size() == 1) updateChoices(item); }
+			@Override public void onRemove(Theme item) { if(subset.size() == 0) resetChoices(); }
+			@Override public void onClear() { resetChoices(); }
+			@Override public void onChange() { if(subset.size() >= 1) updateChoices(subset.iterator().next()); }
+		});
+		
 	}
 
-	@Override
-	public void change(Var<LanguageModel> data) {
-		themes.setCollection(current_language.get().get().getThemes());
+	/**
+	 * Update the choices according to the selected model.
+	 * @param theme		Selected theme.
+	 */
+	private void updateChoices(Theme theme) {
+		if(theme.getModel() != model) {
+			model = theme.getModel();
+			choices.clear();
+			for(Field key: model.getKeys())
+				choices.add(new SingleFieldMaker(key));
+			Vector<Theme> to_remove = new Vector<Theme>();
+			for(Theme t: themes)
+				if(t.getModel() != model)
+					to_remove.add(t);
+			themes.remove(to_remove);
+		}
+	}
+	
+	/**
+	 * Remove all choices.
+	 */
+	private void resetChoices() {
+		model = null;
+		choices.clear();
+		themes.clear();
+		themes.add(current_language.get().get().getThemes());
+	}
+	
+	private void onChange(Var<LanguageModel> data) {
+		choices.clear();
+		subset.clear();
+		themes.clear();
+		themes.add(current_language.get().get().getThemes());
 	}
 
 	/**
@@ -121,20 +176,55 @@ public class ConfigPage extends ApplicationPage implements Var.ChangeListener<La
 	 */
 	private void doTrain() {
 
-		// build the basic test
-		BasicTest ntest = new BasicTest(app.i18n);
+		// build selector and manager
+		Manager manager;
+		if(this.repeat.get())
+			manager = new Manager.TwoShots();
+		else
+			manager = new Manager.OneShot();
+		manager.setSelector(new Selector.RandomSelector());
 
-		// set the producer
-		ntest.setProducer(new OneAnswerProducer(ntest, type.get().getTest(
-			subset.getCollection(),
-			current_language.get().get().getName(),
-			current_language.get().get().getNative())));
-
-		// set the manager
-		ntest.setManager(new RandomManager());
-		if(app.config.repeat)
-			ntest.setManager(new RepeatManager(ntest.getManager()));
-		test.set(ntest);
-		window.doTrain();
+		// build the test
+		Set<Question> questions = new HashSet<Question>();
+		for(Theme theme: subset)
+			questions.addAll(theme.getQuestions());
+		Test test = choice.get().make(questions, manager);
+		
+		// launch the test
+		TrainPage.run(window, test);
 	}
+	
+	/**
+	 * Interface for the builde of tests.
+	 * @author casse
+	 */
+	public interface TestMaker {
+		static final TestMaker NULL = new TestMaker() {
+			@Override public Test make(Collection<Question> questions, Manager manager) { return null; }
+			@Override public String toString() { return "null"; }
+		};
+		
+		Test make(Collection<Question> questions, Manager manager);
+
+	}
+	
+	private class SingleFieldMaker implements TestMaker {
+		Field key;
+		
+		public SingleFieldMaker(Field key) {
+			this.key = key;
+		}
+		
+		@Override
+		public Test make(Collection<Question> questions, Manager manager) {
+			return new SingleKeyTest(current_language.get(), model, key, questions, manager);
+		}
+
+		@Override
+		public String toString() {
+			return String.format(app.t("Ask by %s"), current_language.get().get().t(key.getName(), app.i18n));
+		}
+		
+	}
+
 }
