@@ -24,6 +24,7 @@ import elf.elastik.data.Field;
 import elf.elastik.data.Model;
 import elf.elastik.test.Test;
 import elf.os.OS;
+import elf.text.Formatter;
 import elf.ui.Box;
 import elf.ui.Component;
 import elf.ui.Form;
@@ -67,6 +68,7 @@ public class TrainPage extends ApplicationPage {
 	private WaitTask wait_task = new WaitTask();
 	private StatusBar sbar;
 	private boolean done = false;
+	private Formatter format = new Formatter();
 	
 	private Test test;
 	private Text[] texts;
@@ -262,11 +264,19 @@ public class TrainPage extends ApplicationPage {
 	@Override
 	public void onShow() {
 		super.onShow();
+		
+		// prepare the formatter
+		format.put("native", test.getLanguage().getNativeName());
+		format.put("foreign", test.getLanguage().getForeignName());
+		
+		// reset UI
 		word_count.set(test.getQuestionNumber());
 		progress.set(0);
 		success.set(0);
 		test.reset();
 		getPage();
+		
+		// start the train
 		timer_task.start();
 		sbar.set(app.t("Training started: complete the translations!"));
 		nextWord();
@@ -335,7 +345,7 @@ public class TrainPage extends ApplicationPage {
 
 		@Override
 		public String getLabel() {
-			return field.getName();
+			return format.format(app.t(field.getName()));
 		}
 		
 	}

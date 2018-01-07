@@ -36,8 +36,8 @@ public class Model implements Iterable<Field> {
 	public static final HashMap<String, Model> map = new HashMap<String, Model>();
 	public static final Model
 		SINGLE_WORD = new Model("Single Word",
-			new Field("@native@ Word", true),
-			new Field("@foreign@ Word", true)),
+			new Field("@@native@@ Word", true),
+			new Field("@@foreign@@ Word", true)),
 		IRREGULAR_VERB = new Model("Irregular Verb",
 			new Field("Infinitive", true),
 			new Field("Simple Past", true),
@@ -46,12 +46,12 @@ public class Model implements Iterable<Field> {
 			HORIZONTAL,
 			new Field("Tense", true),
 			new Field("Infinitive", true),
-			new Field("@1@", false),
-			new Field("@2@", false),
-			new Field("@3@", false),
-			new Field("@1s@", false),
-			new Field("@2s@", false),
-			new Field("@3s@", false));
+			new Field("@@1@@", false),
+			new Field("@@2@@", false),
+			new Field("@@3@@", false),
+			new Field("@@1s@@", false),
+			new Field("@@2s@@", false),
+			new Field("@@3s@@", false));
 
 	private String name;
 	private String uri;
