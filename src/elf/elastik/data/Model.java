@@ -44,14 +44,13 @@ public class Model implements Iterable<Field> {
 			new Field("Past Participle", true)),
 		CONJUGATION = new Model("Conjugation",
 			HORIZONTAL,
-			new Field("Tense", true),
 			new Field("Infinitive", true),
-			new Field("@@1@@", false),
-			new Field("@@2@@", false),
-			new Field("@@3@@", false),
-			new Field("@@1s@@", false),
-			new Field("@@2s@@", false),
-			new Field("@@3s@@", false));
+			new Field("@@$1@@", false),
+			new Field("@@$2@@", false),
+			new Field("@@$3@@", false),
+			new Field("@@$1s@@", false),
+			new Field("@@$2s@@", false),
+			new Field("@@$3s@@", false));
 
 	private String name;
 	private String uri;

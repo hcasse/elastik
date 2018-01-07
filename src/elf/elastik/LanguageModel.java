@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import elf.elastik.data.Language;
+import elf.ui.I18N;
 import elf.ui.meta.LateLoader;
 
 /**
@@ -30,10 +31,21 @@ import elf.ui.meta.LateLoader;
 public class LanguageModel extends LateLoader<Language, String> {
 	private Main app;
 	private String for_name, nat_name;
+	private I18N i18n;
 	
 	public LanguageModel(Context context, String id) {
 		super(context, id);
 		app = context.app;
+	}
+	
+	/**
+	 * Get the localization information.
+	 * @return	Localization information.
+	 */
+	public I18N getI18n() {
+		if(i18n == null)
+			i18n = new I18N(Main.APP_NAME, Locale.forLanguageTag(getForeignTag()));
+		return i18n;
 	}
 	
 	public String getForeignName() {
@@ -46,6 +58,22 @@ public class LanguageModel extends LateLoader<Language, String> {
 		if(nat_name == null)
 			nat_name = Locale.forLanguageTag(get().getNative()).getDisplayName();
 		return nat_name;
+	}
+	
+	/**
+	 * Get the native tag of the language model.
+	 * @return	Native tag.
+	 */
+	public String getNativeTag() {
+		return get().getNative();
+	}
+
+	/**
+	 * Get the native tag of the language model.
+	 * @return	Native tag.
+	 */
+	public String getForeignTag() {
+		return get().getName();
 	}
 
 	public LanguageModel(Context context, Language lang) {

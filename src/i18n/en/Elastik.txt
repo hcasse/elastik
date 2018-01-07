@@ -1,8 +1,8 @@
-@@1@=I
-@@2@=You
-@@3@=He/She/It
-@@1s@=We
-@@2s@=You
-@@3s@=They
+$1=I
+$2=You
+$3=He/She/It
+$1s=We
+$2s=You
+$3s=They
 @en@=English
 @fr@=French

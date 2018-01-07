@@ -68,7 +68,17 @@ public class TrainPage extends ApplicationPage {
 	private WaitTask wait_task = new WaitTask();
 	private StatusBar sbar;
 	private boolean done = false;
-	private Formatter format = new Formatter();
+	private Formatter format = new Formatter() {
+
+		@Override
+		public Object get(String id) {
+			if(id.length() >= 1 && id.charAt(0) == '$')
+				return test.getLanguage().getI18n().t(id);
+			else
+				return super.get(id);
+		}
+
+	};
 	
 	private Test test;
 	private Text[] texts;
@@ -96,7 +106,7 @@ public class TrainPage extends ApplicationPage {
 		texts = new Text[model.count()];
 		for(Field field: model)
 			texts[field.getIndex()] = new Text(field);
-		
+
 		// UI initialization
 		normal_color = OS.os.getUI().getColor("#0000ff");
 		failed_color = OS.os.getUI().getColor("#ff0000");
@@ -126,6 +136,12 @@ public class TrainPage extends ApplicationPage {
 	
 	private void configure(Test test) {
 		this.test = test;
+
+		// prepare the formatter
+		format.put("native", test.getLanguage().getNativeName());
+		format.put("foreign", test.getLanguage().getForeignName());
+		
+		// reset the score
 		success.set(0);
 		progress.set(0);
 		test.configure(success, progress);		
@@ -214,8 +230,13 @@ public class TrainPage extends ApplicationPage {
 
 		// select next word
 		else {
-			for(Field field: test.getModel())
+			Text first = null;
+			for(Field field: test.getModel()) {
 				texts[field.getIndex()].setQuestion(values);
+				if(first == null && values[field.getIndex()] == null)
+					first = texts[field.getIndex()];
+			}
+			first.text.gainFocus();
 			info.setText("");
 			done = false;
 		}
@@ -264,10 +285,6 @@ public class TrainPage extends ApplicationPage {
 	@Override
 	public void onShow() {
 		super.onShow();
-		
-		// prepare the formatter
-		format.put("native", test.getLanguage().getNativeName());
-		format.put("foreign", test.getLanguage().getForeignName());
 		
 		// reset UI
 		word_count.set(test.getQuestionNumber());
